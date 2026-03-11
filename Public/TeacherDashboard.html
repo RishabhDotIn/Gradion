@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard - Gradion</title>
+    <link rel="stylesheet" href="./Css/teacherDashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <div class="logo-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <span class="logo-text">Gradion</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="sidebar-link active">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="./createAssignment.html" class="sidebar-link">
+                <i class="fas fa-plus-circle"></i>
+                <span>Create Assignment</span>
+            </a>
+            <a href="./AssignmentTDashbd.html" class="sidebar-link">
+                <i class="fas fa-book-open"></i>
+                <span>Assignments</span>
+            </a>
+            <a href="#" class="sidebar-link">
+                <i class="fas fa-file-alt"></i>
+                <span>Submissions</span>
+            </a>
+            <a href="#" class="sidebar-link">
+                <i class="fas fa-users"></i>
+                <span>Students</span>
+            </a>
+            <a href="#" class="sidebar-link">
+                <i class="fas fa-chart-bar"></i>
+                <span>Reports</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="#" class="sidebar-link">
+                <i class="fas fa-question-circle"></i>
+                <span>Help & Support</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="dashboard-main">
+        <!-- Top Header -->
+        <header class="dashboard-header">
+            <div class="header-left">
+                <h1 class="header-title">Dashboard</h1>
+            </div>
+            <div class="header-right">
+                <div class="header-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search anything">
+                </div>
+                <button class="header-icon-btn">
+                    <i class="fas fa-envelope"></i>
+                </button>
+                <button class="header-icon-btn">
+                    <i class="fas fa-bell"></i>
+                </button>
+                <div class="header-user">
+                    <div class="header-avatar">
+                        <img src="https://ui-avatars.com/api/?name=Amelia+Vance&background=3B82F6&color=fff" alt="Profile">
+                    </div>
+                    <div class="header-user-info">
+                        <span class="header-user-name">Prof. Amelia Vance</span>
+                        <span class="header-user-role">Teacher</span>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <main class="dashboard-content">
+            <!-- Page Title -->
+            <div class="content-header">
+                <h2 class="content-title">Teacher Overview</h2>
+                <div class="content-actions">
+                    <button class="btn-filter">
+                        <i class="fas fa-filter"></i>
+                        Filter
+                    </button>
+                    <button class="btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Add New
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="dashboard-stats">
+                <div class="dashboard-stat-card">
+                    <div class="stat-content">
+                        <span class="stat-label">Total Assignments</span>
+                        <span class="stat-value" id="totalAssignments">1,900</span>
+                        <div class="stat-trend up">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>+2.15%</span>
+                            <span class="trend-text">Since last week</span>
+                        </div>
+                    </div>
+                    <div class="stat-icon purple">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                </div>
+
+                <div class="dashboard-stat-card">
+                    <div class="stat-content">
+                        <span class="stat-label">Total Students</span>
+                        <span class="stat-value" id="totalStudents">800</span>
+                        <div class="stat-trend up">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>+2.15%</span>
+                            <span class="trend-text">Since last week</span>
+                        </div>
+                    </div>
+                    <div class="stat-icon green">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+
+                <div class="dashboard-stat-card">
+                    <div class="stat-content">
+                        <span class="stat-label">Total Submissions</span>
+                        <span class="stat-value" id="totalSubmissions">10</span>
+                        <div class="stat-trend up">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>+2.15%</span>
+                            <span class="trend-text">Since last week</span>
+                        </div>
+                    </div>
+                    <div class="stat-icon orange">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                </div>
+
+                <div class="dashboard-stat-card">
+                    <div class="stat-content">
+                        <span class="stat-label">Pending Reviews</span>
+                        <span class="stat-value" id="pendingReviews">65.74%</span>
+                        <div class="stat-trend up">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>+2.15%</span>
+                            <span class="trend-text">Since last week</span>
+                        </div>
+                    </div>
+                    <div class="stat-icon pink">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tables Grid -->
+            <div class="tables-grid">
+                <!-- Table Section -->
+                <div class="table-section" id="tableSection">
+                    <div class="table-header">
+                        <h3 class="table-title">Recent Assignments</h3>
+                        <div class="table-actions">
+                            <button class="table-action-btn">
+                                <i class="fas fa-download"></i>
+                            </button>
+                            <button class="table-action-btn">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Deadline</th>
+                                <th>Submissions</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="table-title-cell">
+                                        <div class="title-icon purple">
+                                            <i class="fas fa-code"></i>
+                                        </div>
+                                        <span>Array Sum</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="date-cell">
+                                        <i class="far fa-calendar"></i>
+                                        10 Apr 2026
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="submissions-cell">
+                                        <span class="submissions-count">25</span>
+                                        <span class="submissions-label">students</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="action-btn view" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="action-btn edit" title="Edit">
+                                            <i class="fas fa-pen"></i>
+                                        </button>
+                                        <button class="action-btn delete" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="table-title-cell">
+                                        <div class="title-icon green">
+                                            <i class="fas fa-sort"></i>
+                                        </div>
+                                        <span>Sorting Problem</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="date-cell">
+                                        <i class="far fa-calendar"></i>
+                                        15 Apr 2026
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="submissions-cell">
+                                        <span class="submissions-count">18</span>
+                                        <span class="submissions-label">students</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="action-btn view" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="action-btn edit" title="Edit">
+                                            <i class="fas fa-pen"></i>
+                                        </button>
+                                        <button class="action-btn delete" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="table-title-cell">
+                                        <div class="title-icon orange">
+                                            <i class="fas fa-link"></i>
+                                        </div>
+                                        <span>Linked List</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="date-cell">
+                                        <i class="far fa-calendar"></i>
+                                        20 Apr 2026
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="submissions-cell">
+                                        <span class="submissions-count">12</span>
+                                        <span class="submissions-label">students</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="action-btn view" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="action-btn edit" title="Edit">
+                                            <i class="fas fa-pen"></i>
+                                        </button>
+                                        <button class="action-btn delete" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="table-title-cell">
+                                        <div class="title-icon blue">
+                                            <i class="fas fa-search"></i>
+                                        </div>
+                                        <span>Binary Search</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="date-cell">
+                                        <i class="far fa-calendar"></i>
+                                        25 Apr 2026
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="submissions-cell">
+                                        <span class="submissions-count">8</span>
+                                        <span class="submissions-label">students</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="action-btn view" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="action-btn edit" title="Edit">
+                                            <i class="fas fa-pen"></i>
+                                        </button>
+                                        <button class="action-btn delete" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="table-title-cell">
+                                        <div class="title-icon pink">
+                                            <i class="fas fa-project-diagram"></i>
+                                        </div>
+                                        <span>Graph Traversal</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="date-cell">
+                                        <i class="far fa-calendar"></i>
+                                        30 Apr 2026
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="submissions-cell">
+                                        <span class="submissions-count">5</span>
+                                        <span class="submissions-label">students</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="action-btn view" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="action-btn edit" title="Edit">
+                                            <i class="fas fa-pen"></i>
+                                        </button>
+                                        <button class="action-btn delete" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="table-footer">
+                        <span class="table-info">Showing 1-5 of 25 assignments</span>
+                        <button class="btn-view-all" onclick="location.href='./AssignmentTDashbd.html'">
+                            View All Assignments
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recent Submissions Section -->
+                <div class="submissions-section">
+                    <div class="table-header">
+                        <h3 class="table-title">Recent Submissions</h3>
+                        <button class="table-action-btn">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                    </div>
+                    <div class="submissions-list">
+                        <div class="submission-item">
+                            <div class="submission-avatar">
+                                <img src="https://ui-avatars.com/api/?name=Rahul&background=6366f1&color=fff" alt="Rahul">
+                            </div>
+                            <div class="submission-info">
+                                <span class="submission-student">Rahul</span>
+                                <span class="submission-assignment">Array Sum</span>
+                            </div>
+                            <span class="submission-time">2 hours ago</span>
+                        </div>
+                        <div class="submission-item">
+                            <div class="submission-avatar">
+                                <img src="https://ui-avatars.com/api/?name=Aman&background=10b981&color=fff" alt="Aman">
+                            </div>
+                            <div class="submission-info">
+                                <span class="submission-student">Aman</span>
+                                <span class="submission-assignment">Sorting Problem</span>
+                            </div>
+                            <span class="submission-time">5 hours ago</span>
+                        </div>
+                        <div class="submission-item">
+                            <div class="submission-avatar">
+                                <img src="https://ui-avatars.com/api/?name=Priya&background=f97316&color=fff" alt="Priya">
+                            </div>
+                            <div class="submission-info">
+                                <span class="submission-student">Priya</span>
+                                <span class="submission-assignment">Linked List</span>
+                            </div>
+                            <span class="submission-time">1 day ago</span>
+                        </div>
+                        <div class="submission-item">
+                            <div class="submission-avatar">
+                                <img src="https://ui-avatars.com/api/?name=Sneha&background=ec4899&color=fff" alt="Sneha">
+                            </div>
+                            <div class="submission-info">
+                                <span class="submission-student">Sneha</span>
+                                <span class="submission-assignment">Binary Search</span>
+                            </div>
+                            <span class="submission-time">2 days ago</span>
+                        </div>
+                        <div class="submission-item">
+                            <div class="submission-avatar">
+                                <img src="https://ui-avatars.com/api/?name=Vikram&background=3b82f6&color=fff" alt="Vikram">
+                            </div>
+                            <div class="submission-info">
+                                <span class="submission-student">Vikram</span>
+                                <span class="submission-assignment">Graph Traversal</span>
+                            </div>
+                            <span class="submission-time">3 days ago</span>
+                        </div>
+                    </div>
+                    <div class="table-footer">
+                        <button class="btn-view-all-outline">
+                            View All Submissions
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="./Backend.js"></script>
+    <script src="./Js/teacherDashboard.js"></script>
+</body>
+</html>
