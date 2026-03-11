@@ -11,6 +11,9 @@ dotenv.config();
 const User = require('./models/User');
 const { auth, roleAuth } = require('./middleware/auth');
 
+// Import assignment routes
+const assignmentRoutes = require('./routes/assignmentRoutes');
+
 // Initialize Express app
 const app = express();
 
@@ -253,6 +256,9 @@ app.get('/api/auth/verify', auth, async (req, res) => {
     });
   }
 });
+
+// Mount assignment routes - Ridhi's module
+app.use('/api/assignments', assignmentRoutes);
 
 // Protected routes examples
 app.get('/api/dashboard/student', auth, roleAuth('student'), (req, res) => {
