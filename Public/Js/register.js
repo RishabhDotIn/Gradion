@@ -57,7 +57,16 @@ function initFormSubmit() {
             submitBtn.disabled = true;
             
             try {
-                const response = await fetch('/api/auth/register', {
+                // Ensure API_CONFIG is available
+                if (typeof API_CONFIG === 'undefined') {
+                    throw new Error('API Configuration not loaded. Please reload the page.');
+                }
+                
+                const apiUrl = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.REGISTER}`;
+                console.log('Register API URL:', apiUrl);
+                console.log('Register payload:', { fullName, email, password, role });
+                
+                const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -70,26 +79,43 @@ function initFormSubmit() {
                     })
                 });
                 
+                console.log('Response status:', response.status);
                 const data = await response.json();
+                console.log('Response data:', data);
                 
                 if (!response.ok) {
-                    throw new Error(data.message || 'Registration failed');
+                    throw new Error(data.message || data.errors?.[0]?.msg || 'Registration failed');
                 }
                 
-                // Store JWT token if returned
+                // Verify we have a success response
+                if (!data.success) {
+                    throw new Error(data.message || 'Registration was not successful');
+                }
+                
+                // Store JWT token if returned (for auto-login)
                 if (data.token) {
                     localStorage.setItem('token', data.token);
+                    console.log('Token stored:', data.token);
                 }
                 
-                // Success - redirect to login
+                // Success - update UI
                 submitBtn.innerHTML = '<i class="fas fa-check"></i> Account Created!';
                 submitBtn.style.background = '#22c55e';
                 
+                console.log('Registration successful, redirecting to login in 1.5 seconds...');
+                
                 setTimeout(() => {
-                    window.location.href = './login.html';
-                }, 1000);
+                    try {
+                        console.log('Redirecting to login page');
+                        window.location.href = './login.html';
+                    } catch (redirectError) {
+                        console.error('Redirect error:', redirectError);
+                        showError('Registration successful but could not redirect. Please navigate to login.');
+                    }
+                }, 1500);
                 
             } catch (error) {
+                console.error('Registration error:', error);
                 submitBtn.innerHTML = originalText;
                 submitBtn.disabled = false;
                 showError(error.message || 'Registration failed. Please try again.');
