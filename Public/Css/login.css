@@ -136,6 +136,7 @@ body {
     border: 1px solid var(--border-color);
     border-radius: 10px;
     transition: border-color 0.2s, box-shadow 0.2s;
+    position: relative;
 }
 
 .input-wrapper:focus-within {
@@ -163,20 +164,80 @@ body {
     color: var(--text-muted);
 }
 
+.input-wrapper input[type="password"],
+.input-wrapper input[type="text"] {
+    padding-right: 50px !important;
+}
+
+/* Password Input Wrapper */
+.password-wrapper {
+    position: relative;
+}
+
+.password-wrapper > i.fa-lock {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    font-size: 14px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.password-wrapper input {
+    padding-left: 44px !important;
+    padding-right: 50px !important;
+}
+
+/* Toggle Password Button */
 .toggle-password {
-    background: none;
-    border: none;
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
     cursor: pointer;
-    color: var(--text-muted);
-    padding: 0;
+    color: #6b7280;
+    padding: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: color 0.2s;
+    z-index: 10;
+    transition: color 0.2s ease;
+    background: transparent;
+    border: none;
 }
 
 .toggle-password:hover {
-    color: var(--text-gray);
+    color: #6366f1;
+}
+
+.toggle-password i {
+    font-size: 16px;
+}
+
+/* Hide duplicate icons - FontAwesome sometimes creates multiple elements */
+.toggle-password svg:not(:first-of-type),
+.toggle-password i:not(:first-of-type) {
+    display: none !important;
+}
+
+/* If FontAwesome uses SVG, ensure only one shows */
+.toggle-password svg ~ svg,
+.toggle-password i ~ i,
+.toggle-password svg ~ i,
+.toggle-password i ~ svg {
+    display: none !important;
+}
+
+.toggle-password i {
+    font-size: 16px;
+    line-height: 1;
+}
+
+/* Ensure the button only contains one icon - hide any duplicates */
+.toggle-password i + i {
+    display: none !important;
 }
 
 /* Remember Me */
@@ -382,6 +443,22 @@ body {
     0%, 100% { transform: translateX(0); }
     25% { transform: translateX(-5px); }
     75% { transform: translateX(5px); }
+}
+
+/* Hide browser's default password reveal button (Edge/Chrome) */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear,
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-clear-button {
+    display: none !important;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+/* Also hide for text type (when password is revealed) */
+input#password::-ms-reveal,
+input#password::-ms-clear {
+    display: none !important;
 }
 
 /* Responsive */

@@ -581,7 +581,38 @@ function showNotification(message, type = 'info') {
 }
 
 // Initialize dashboard when DOM is ready
-document.addEventListener('DOMContentLoaded', initDashboard);
+document.addEventListener('DOMContentLoaded', function() {
+    initDashboard();
+    loadUserProfile();
+});
+
+// Load User Profile from localStorage
+function loadUserProfile() {
+    const userNameEl = document.getElementById('userName');
+    const userAvatarEl = document.getElementById('userAvatar');
+    
+    const userStr = localStorage.getItem('user') || sessionStorage.getItem('user');
+    
+    if (userStr) {
+        try {
+            const user = JSON.parse(userStr);
+            
+            // Update user name
+            if (userNameEl && user.name) {
+                userNameEl.textContent = user.name;
+            } else if (userNameEl && user.email) {
+                userNameEl.textContent = user.email.split('@')[0];
+            }
+            
+            // Update avatar
+            if (userAvatarEl && user.name) {
+                userAvatarEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=3B82F6&color=fff`;
+            }
+        } catch (e) {
+            console.error('Error:', e);
+        }
+    }
+}
 
 // Export functions for global access
 window.viewAssignment = viewAssignment;

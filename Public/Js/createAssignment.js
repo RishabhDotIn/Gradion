@@ -22,9 +22,36 @@ const questionTemplate = document.getElementById('questionTemplate');
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
+    loadUserProfile();
     initializeForm();
     setupEventListeners();
 });
+
+// Load User Profile from localStorage
+function loadUserProfile() {
+    const userNameEl = document.getElementById('userName');
+    const userAvatarEl = document.getElementById('userAvatar');
+    
+    const userStr = localStorage.getItem('user') || sessionStorage.getItem('user');
+    
+    if (userStr) {
+        try {
+            const user = JSON.parse(userStr);
+            
+            if (userNameEl && user.name) {
+                userNameEl.textContent = user.name;
+            } else if (userNameEl && user.email) {
+                userNameEl.textContent = user.email.split('@')[0];
+            }
+            
+            if (userAvatarEl && user.name) {
+                userAvatarEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=3B82F6&color=fff`;
+            }
+        } catch (e) {
+            console.error('Error loading user:', e);
+        }
+    }
+}
 
 // Initialize Form
 function initializeForm() {
@@ -35,8 +62,8 @@ function initializeForm() {
         deadlineInput.setAttribute('min', today);
     }
     
-    // Initialize with one question
-    addQuestion();
+    // Initialize with one question (without notification)
+    addQuestion(true);
 }
 
 // Setup Event Listeners
@@ -257,7 +284,7 @@ function handleNumQuestionsChange(e) {
 }
 
 // Add Question
-function addQuestion() {
+function addQuestion(skipNotification = false) {
     const template = document.getElementById('questionTemplate');
     const clone = template.content.cloneNode(true);
     
@@ -288,7 +315,10 @@ function addQuestion() {
         numQuestionsInput.value = currentCount;
     }
     
-    showNotification(`Question ${currentCount} added`, 'success');
+    // Only show notification if not skipped (e.g., on page load)
+    if (!skipNotification) {
+        showNotification(`Question ${currentCount} added`, 'success');
+    }
 }
 
 // Delete Question
