@@ -5,18 +5,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Password Toggle
 function initPasswordToggle() {
-    const toggleBtn = document.querySelector('.toggle-password');
-    const passwordInput = document.querySelector('input[type="password"]');
+    const toggleBtn = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    const eyeIcon = document.getElementById('eyeIcon');
     
-    if (toggleBtn && passwordInput) {
-        toggleBtn.addEventListener('click', () => {
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
+    if (toggleBtn && passwordInput && eyeIcon) {
+        toggleBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
             
-            // Toggle icon
-            const icon = toggleBtn.querySelector('i');
-            icon.classList.toggle('fa-eye');
-            icon.classList.toggle('fa-eye-slash');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.classList.remove('fa-eye');
+                eyeIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.classList.remove('fa-eye-slash');
+                eyeIcon.classList.add('fa-eye');
+            }
         });
     }
 }
@@ -29,8 +35,8 @@ function initFormSubmit() {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const email = form.querySelector('input[type="email"]').value;
-            const password = form.querySelector('input[type="password"]').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
             const rememberMe = document.getElementById('rememberMe').checked;
             
             const submitBtn = form.querySelector('.btn-submit');
