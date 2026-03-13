@@ -5,18 +5,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Password Toggle
 function initPasswordToggle() {
-    const toggleBtn = document.querySelector('.toggle-password');
-    const passwordInput = document.querySelector('input[type="password"]');
+    const toggleBtn = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    const eyeIcon = document.getElementById('eyeIcon');
     
-    if (toggleBtn && passwordInput) {
-        toggleBtn.addEventListener('click', () => {
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
+    if (toggleBtn && passwordInput && eyeIcon) {
+        toggleBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
             
-            // Toggle icon
-            const icon = toggleBtn.querySelector('i');
-            icon.classList.toggle('fa-eye');
-            icon.classList.toggle('fa-eye-slash');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.classList.remove('fa-eye');
+                eyeIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.classList.remove('fa-eye-slash');
+                eyeIcon.classList.add('fa-eye');
+            }
         });
     }
 }
@@ -29,8 +35,8 @@ function initFormSubmit() {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const email = form.querySelector('input[type="email"]').value;
-            const password = form.querySelector('input[type="password"]').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
             const rememberMe = document.getElementById('rememberMe').checked;
             
             const submitBtn = form.querySelector('.btn-submit');
@@ -41,7 +47,16 @@ function initFormSubmit() {
             submitBtn.disabled = true;
             
             try {
-                const response = await fetch('/api/auth/login', {
+                // Ensure API_CONFIG is available
+                if (typeof API_CONFIG === 'undefined') {
+                    throw new Error('API Configuration not loaded. Please reload the page.');
+                }
+                
+                const apiUrl = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.LOGIN}`;
+                console.log('Login API URL:', apiUrl);
+                console.log('Login payload:', { email, password, rememberMe });
+                
+                const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -53,36 +68,63 @@ function initFormSubmit() {
                     })
                 });
                 
+                console.log('Response status:', response.status);
                 const data = await response.json();
+                console.log('Response data:', data);
                 
                 if (!response.ok) {
                     throw new Error(data.message || 'Login failed');
                 }
                 
+                // Verify we have a success response
+                if (!data.success) {
+                    throw new Error(data.message || 'Login was not successful');
+                }
+                
                 // Store JWT token
                 if (data.token) {
                     localStorage.setItem('token', data.token);
+                    console.log('Token stored successfully');
                 }
                 
                 // Store user info if available
                 if (data.user) {
                     localStorage.setItem('user', JSON.stringify(data.user));
+                    console.log('User data stored:', data.user);
+                } else {
+                    // Fallback: at least store the email
+                    localStorage.setItem('user', JSON.stringify({ email: email }));
+                    console.log('No user data from server, stored minimal data');
                 }
                 
-                // Success - redirect to dashboard
+                // Success - update UI
                 submitBtn.innerHTML = '<i class="fas fa-check"></i> Success!';
                 submitBtn.style.background = '#22c55e';
                 
+                console.log('Login successful, preparing redirect in 1.5 seconds...');
+                
                 setTimeout(() => {
-                    // Redirect based on user role
-                    if (data.user && data.user.role === 'teacher') {
-                        window.location.href = './AssignmentTDashbd.html';
-                    } else {
-                        window.location.href = './studentDashboard.html';
+                    try {
+                        let redirectUrl = './index.html'; // Default for students
+                        
+                        // Check user role from data
+                        if (data.user && data.user.role === 'teacher') {
+                            redirectUrl = './TeacherDashboard.html';
+                            console.log('User is teacher, redirecting to:', redirectUrl);
+                        } else {
+                            console.log('User is student, redirecting to:', redirectUrl);
+                        }
+                        
+                        console.log('Executing redirect to:', redirectUrl);
+                        window.location.href = redirectUrl;
+                    } catch (redirectError) {
+                        console.error('Redirect error:', redirectError);
+                        showError('Login successful but could not redirect. Please navigate manually.');
                     }
-                }, 1000);
+                }, 1500);
                 
             } catch (error) {
+                console.error('Login error:', error);
                 submitBtn.innerHTML = originalText;
                 submitBtn.disabled = false;
                 showError(error.message || 'Login failed. Please check your credentials.');
