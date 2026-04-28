@@ -15,7 +15,7 @@ const { auth, roleAuth } = require('./middleware/auth');
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
@@ -268,6 +268,13 @@ app.get('/api/dashboard/teacher', auth, roleAuth('teacher'), (req, res) => {
     success: true,
     message: 'Welcome to teacher dashboard',
     user: req.user
+  });
+});
+
+app.get('/api/performance', auth, (req, res) => {
+  res.json({
+    success: true,
+    scores: [65, 72, 80, 75, 90]
   });
 });
 

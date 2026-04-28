@@ -67,7 +67,7 @@ function initFormSubmit() {
                         rememberMe
                     })
                 });
-                
+                  
                 console.log('Response status:', response.status);
                 const data = await response.json();
                 console.log('Response data:', data);

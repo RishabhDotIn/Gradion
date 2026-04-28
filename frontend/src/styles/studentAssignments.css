@@ -1,0 +1,350 @@
+.assignments-content {
+    padding: 32px;
+    padding-top: 48px;
+    background: #ffffff;
+    min-height: 100vh;
+}
+
+.assignments-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 40px;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.header-left {
+    display: flex;
+    align-items: baseline;
+}
+
+.header-left h1 {
+    font-size: 32px;
+    font-weight: 800;
+    color: #1e293b;
+    margin: 0;
+}
+
+.header-left p {
+    color: #64748b;
+    font-size: 16px;
+    margin: 0 0 0 16px;
+}
+
+.header-right {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.search-bar {
+    position: relative;
+    width: 300px;
+}
+
+.search-bar i {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 12px 16px 12px 44px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.search-bar input:focus {
+    outline: none;
+    border-color: #6C63FF;
+    box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.1);
+}
+
+.filter-select {
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    font-size: 14px;
+    font-weight: 500;
+    color: #475569;
+    cursor: pointer;
+    min-width: 160px;
+}
+
+.filter-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-btn:hover {
+    background: #f1f5f9;
+}
+
+.view-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.showing-text {
+    font-size: 14px;
+    color: #64748b;
+}
+
+.view-toggles {
+    display: flex;
+    background: #ffffff;
+    padding: 4px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+}
+
+.view-toggle-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.view-toggle-btn.active {
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+/* Assignments Grid/List Layout */
+.assignments-container.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+}
+
+.assignments-container.list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Card Styling */
+.assignment-card {
+    background: #ffffff;
+    border-radius: 20px;
+    border: 1px solid #f1f5f9;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+}
+
+.assignment-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.04);
+}
+
+.assignment-card.list {
+    flex-direction: row;
+    align-items: center;
+    padding: 12px;
+}
+
+.card-top {
+    padding: 24px;
+    flex: 1;
+}
+
+.assignment-card.list .card-top {
+    padding: 12px 24px;
+}
+
+.course-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.course-name {
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-label {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    text-transform: capitalize;
+}
+
+.status-label.not-started {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.status-label.submitted {
+    background: #f0fdf4;
+    color: #15803d;
+}
+
+.status-label.published {
+    background: #f0fdf4;
+    color: #15803d;
+}
+
+.status-label.closed {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.assignment-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 16px 0;
+    line-height: 1.4;
+}
+
+.assignment-description {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0 0 20px 0;
+    line-height: 1.6;
+}
+
+.assignment-meta {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.meta-item i {
+    color: #94a3b8;
+}
+
+.card-bottom {
+    padding: 16px 24px;
+    border-top: 1px solid #f8fafc;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fcfdfe;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.student-view .card-bottom {
+    justify-content: flex-start;
+    gap: 24px;
+    flex-wrap: nowrap;
+}
+
+.assignment-card.list .card-bottom {
+    border-top: none;
+    border-left: 1px solid #f1f5f9;
+    padding: 12px 24px;
+    min-width: 200px;
+    flex-direction: column;
+    gap: 12px;
+    background: transparent;
+}
+
+.due-date {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    white-space: nowrap;
+}
+
+.due-date i {
+    color: #6C63FF;
+}
+
+.action-btn {
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.student-view .action-btn {
+    padding: 4px 14px;
+    border-radius: 25px;
+    font-size: 12px;
+}
+
+.action-btn.primary {
+    background: #6C63FF;
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 4px 12px rgba(108, 99, 255, 0.2);
+}
+
+.action-btn.primary:hover {
+    background: #5a52e0;
+    transform: translateY(-1px);
+}
+
+.action-btn.secondary {
+    background: transparent;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+}
+
+.action-btn.secondary:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .header-right {
+        width: 100%;
+    }
+
+    .search-bar {
+        width: 100%;
+    }
+}

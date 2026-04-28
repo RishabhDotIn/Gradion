@@ -1,4 +1,9 @@
+// Store password input reference at load time
+// (querying by type at submit time breaks when the toggle changes type to "text")
+let passwordInputRef = null;
+
 document.addEventListener('DOMContentLoaded', () => {
+    passwordInputRef = document.querySelector('input[type="password"]');
     initRoleSelector();
     initPasswordToggle();
     initFormSubmit();
@@ -46,7 +51,7 @@ function initFormSubmit() {
             
             const fullName = form.querySelector('input[type="text"]').value;
             const email = form.querySelector('input[type="email"]').value;
-            const password = form.querySelector('input[type="password"]').value;
+            const password = passwordInputRef ? passwordInputRef.value : '';
             const role = document.querySelector('.role-option.selected').dataset.role;
             
             const submitBtn = form.querySelector('.btn-submit');
