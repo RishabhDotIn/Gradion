@@ -10,6 +10,8 @@ import CreateAssignmentPage from "./pages/CreateAssignmentPage.jsx";
 import TeacherAssignmentsPage from "./pages/TeacherAssignmentsPage.jsx";
 import AssignmentEditorPage from "./pages/AssignmentEditorPage.jsx";
 import TeacherViewAssignmentPage from "./pages/TeacherViewAssignmentPage.jsx";
+import StudentSubmissionsPage from "./pages/StudentSubmissionsPage.jsx";
+import StudentViewSubmissionPage from "./pages/StudentViewSubmissionPage.jsx";
 
 function App() {
   return (
@@ -20,6 +22,8 @@ function App() {
       <Route path="/teacher-dashboard" element={<TeacherDashboardPage />} />
       <Route path="/student-dashboard" element={<StudentDashboardPage />} />
       <Route path="/student-assignments" element={<StudentAssignmentsPage />} />
+      <Route path="/my-submissions" element={<StudentSubmissionsPage />} />
+      <Route path="/student/submission/:id" element={<StudentViewSubmissionPage />} />
       <Route path="/create-assignment" element={<CreateAssignmentPage />} />
       <Route path="/teacher-assignments" element={<TeacherAssignmentsPage />} />
       <Route path="/teacher/assignment/view/:id" element={<TeacherViewAssignmentPage />} />
