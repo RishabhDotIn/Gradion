@@ -1,6 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import DashboardSidebar from "../components/dashboard/DashboardSidebar.jsx";
+import { apiCall, API_CONFIG } from "../lib/apiConfig.js";
 import "../styles/teacherDashboard.css";
 import "../styles/createAssignment.css";
 
@@ -24,16 +25,19 @@ function CreateAssignmentPage() {
   });
   const [numQuestionsInput, setNumQuestionsInput] = useState("");
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const editId = queryParams.get("edit");
 
   useEffect(() => {
-    if (editId) {
-      const assignments = JSON.parse(localStorage.getItem("gradion_assignments") || "[]");
-      const found = assignments.find((a) => a.id.toString() === editId);
-      if (found) {
+    const loadAssignment = async () => {
+      if (!editId) return;
+      try {
+        const data = await apiCall(`${API_CONFIG.ENDPOINTS.ASSIGNMENTS}/${editId}`);
+        const found = data.assignment;
+        if (!found) return;
         setTitle(found.title || "");
         setDescription(found.description || "");
         setTopic(found.topic || "");
@@ -41,26 +45,40 @@ function CreateAssignmentPage() {
         setDeadline(found.deadline || "");
         setQuestions(found.questions || []);
         setNumQuestionsInput((found.questions?.length || 0).toString());
+      } catch (err) {
+        setError(err.message || "Failed to load assignment");
       }
-    }
+    };
+
+    loadAssignment();
   }, [editId]);
 
-  const publishAssignment = () => {
+  const publishAssignment = async () => {
     setSaving(true);
-    let assignments = JSON.parse(localStorage.getItem("gradion_assignments") || "[]");
-    
-    if (editId) {
-      assignments = assignments.map((a) => 
-        a.id.toString() === editId 
-          ? { ...a, title, description, topic, difficulty, deadline, questions, updatedAt: new Date().toISOString() } 
-          : a
-      );
-    } else {
-      assignments.push({ id: Date.now(), title, description, topic, difficulty, deadline, questions, createdAt: new Date().toISOString(), status: "published" });
+    setError("");
+
+    const payload = {
+      title,
+      description,
+      topic,
+      difficulty,
+      deadline,
+      questions,
+      status: "published",
+    };
+
+    try {
+      if (editId) {
+        await apiCall(`${API_CONFIG.ENDPOINTS.ASSIGNMENTS}/${editId}`, "PUT", payload);
+      } else {
+        await apiCall(API_CONFIG.ENDPOINTS.ASSIGNMENTS, "POST", payload);
+      }
+      navigate("/teacher-dashboard");
+    } catch (err) {
+      setError(err.message || "Failed to save assignment");
+    } finally {
+      setSaving(false);
     }
-    
-    localStorage.setItem("gradion_assignments", JSON.stringify(assignments));
-    setTimeout(() => navigate("/teacher-dashboard"), 1200);
   };
 
   return (
@@ -87,7 +105,7 @@ function CreateAssignmentPage() {
             <div className={`step-item ${step === 3 ? "active" : ""}`}><div className="step-number">3</div><span className="step-label">Publish</span></div>
           </div>
           <div className="form-container">
-            {step === 1 ? <div className="form-step active" id="step1"><div className="form-step-header"><h2 className="form-step-title"><i className="fas fa-info-circle" />Assignment Details</h2><p className="form-step-desc">Enter the basic information about your assignment.</p></div><div className="form-card"><div className="form-group"><label htmlFor="assignmentTitle">Assignment Title <span className="required">*</span></label><input type="text" id="assignmentTitle" placeholder="Enter assignment title" required value={title} onChange={(e) => setTitle(e.target.value)} /></div><div className="form-group"><label htmlFor="assignmentDescription">Description</label><textarea id="assignmentDescription" rows="4" placeholder="Enter assignment description..." value={description} onChange={(e) => setDescription(e.target.value)} /></div><div className="form-row"><div className="form-group"><label htmlFor="topic">Topic <span className="required">*</span></label><div className="select-wrapper"><select id="topic" required value={topic} onChange={(e) => setTopic(e.target.value)}><option value="">Select Topic</option><option value="programming-fundamentals">Programming Fundamentals</option><option value="data-structures">Data Structures</option><option value="algorithms">Algorithms</option><option value="web-development">Web Development</option><option value="database">Database</option><option value="oop">Object-Oriented Programming</option></select><i className="fas fa-chevron-down" /></div></div><div className="form-group"><label htmlFor="difficulty">Difficulty <span className="required">*</span></label><div className="select-wrapper"><select id="difficulty" required value={difficulty} onChange={(e) => setDifficulty(e.target.value)}><option value="">Select Difficulty</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select><i className="fas fa-chevron-down" /></div></div></div><div className="form-row"><div className="form-group"><label htmlFor="deadline">Deadline <span className="required">*</span></label><input type="date" id="deadline" required value={deadline} onChange={(e) => setDeadline(e.target.value)} /></div><div className="form-group"><label htmlFor="numQuestions">Number of Questions <span className="required">*</span></label><input 
+            {step === 1 ? <div className="form-step active" id="step1"><div className="form-step-header"><h2 className="form-step-title"><i className="fas fa-info-circle" />Assignment Details</h2><p className="form-step-desc">Enter the basic information about your assignment.</p></div>{error ? <p style={{ color: "#dc2626", marginBottom: "12px" }}>{error}</p> : null}<div className="form-card"><div className="form-group"><label htmlFor="assignmentTitle">Assignment Title <span className="required">*</span></label><input type="text" id="assignmentTitle" placeholder="Enter assignment title" required value={title} onChange={(e) => setTitle(e.target.value)} /></div><div className="form-group"><label htmlFor="assignmentDescription">Description</label><textarea id="assignmentDescription" rows="4" placeholder="Enter assignment description..." value={description} onChange={(e) => setDescription(e.target.value)} /></div><div className="form-row"><div className="form-group"><label htmlFor="topic">Topic <span className="required">*</span></label><div className="select-wrapper"><select id="topic" required value={topic} onChange={(e) => setTopic(e.target.value)}><option value="">Select Topic</option><option value="programming-fundamentals">Programming Fundamentals</option><option value="data-structures">Data Structures</option><option value="algorithms">Algorithms</option><option value="web-development">Web Development</option><option value="database">Database</option><option value="oop">Object-Oriented Programming</option></select><i className="fas fa-chevron-down" /></div></div><div className="form-group"><label htmlFor="difficulty">Difficulty <span className="required">*</span></label><div className="select-wrapper"><select id="difficulty" required value={difficulty} onChange={(e) => setDifficulty(e.target.value)}><option value="">Select Difficulty</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select><i className="fas fa-chevron-down" /></div></div></div><div className="form-row"><div className="form-group"><label htmlFor="deadline">Deadline <span className="required">*</span></label><input type="date" id="deadline" required value={deadline} onChange={(e) => setDeadline(e.target.value)} /></div><div className="form-group"><label htmlFor="numQuestions">Number of Questions <span className="required">*</span></label><input 
   type="number" 
   id="numQuestions" 
   min="1" 

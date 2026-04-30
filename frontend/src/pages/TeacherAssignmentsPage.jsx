@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardSidebar from '../components/dashboard/DashboardSidebar.jsx';
 import DashboardHeader from '../components/dashboard/DashboardHeader.jsx';
+import { apiCall, API_CONFIG } from '../lib/apiConfig.js';
 import '../styles/studentAssignments.css';
 
 const TeacherAssignmentsPage = () => {
@@ -11,25 +12,8 @@ const TeacherAssignmentsPage = () => {
   const [selectedTopic, setSelectedTopic] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const [assignments, setAssignments] = useState(() => {
-    const mockData = [
-      { id: 1, title: "Data Structures Midterm Report", topic: "Data Structures", difficulty: "Medium", questionsCount: 15, deadline: "Oct 24, 2026", status: "Published", description: "Comprehensive report on trees and graphs implementation." },
-      { id: 2, title: "Algorithms Analytical Essay", topic: "Algorithms", difficulty: "Hard", questionsCount: 5, deadline: "Oct 28, 2026", status: "Published", description: "An in-depth analysis of sorting algorithms complexity." },
-      { id: 3, title: "Database Weekly Quiz 4", topic: "Database", difficulty: "Medium", questionsCount: 20, deadline: "Oct 22, 2026", status: "Closed", description: "SQL normalization techniques and query optimization." },
-      { id: 4, title: "Web Dev Project Proposal", topic: "Web Development", difficulty: "Easy", questionsCount: 10, deadline: "Nov 05, 2026", status: "Published", description: "Initial proposal for the semester-long React application." },
-      { id: 5, title: "OOP Lab Sheets", topic: "Object-Oriented Programming", difficulty: "Hard", questionsCount: 12, deadline: "Oct 20, 2026", status: "Closed", description: "Detailed observations on inheritance and polymorphism." },
-      { id: 6, title: "Programming Fundamentals Quiz", topic: "Programming Fundamentals", difficulty: "Easy", questionsCount: 25, deadline: "Oct 25, 2026", status: "Published", description: "Assessment covering loops, variables, and data types." },
-    ];
-
-    const stored = JSON.parse(localStorage.getItem("gradion_assignments") || "[]");
-    const normalized = stored.map(a => ({
-      ...a,
-      questionsCount: a.questions?.length || 0,
-      status: "Published"
-    }));
-
-    return [...mockData, ...normalized];
-  });
+  const [assignments, setAssignments] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const user = useMemo(() => {
     const userStr = localStorage.getItem("user") || sessionStorage.getItem("user");
@@ -53,6 +37,27 @@ const TeacherAssignmentsPage = () => {
                          assignment.topic.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesStatus && matchesTopic && matchesSearch;
   });
+
+  useEffect(() => {
+    const loadAssignments = async () => {
+      setLoading(true);
+      try {
+        const response = await apiCall(API_CONFIG.ENDPOINTS.ASSIGNMENTS);
+        const normalized = (response.assignments || []).map((assignment) => ({
+          ...assignment,
+          questionsCount: assignment.questions?.length || 0,
+          status: assignment.status ? assignment.status.charAt(0).toUpperCase() + assignment.status.slice(1) : "Published",
+        }));
+        setAssignments(normalized);
+      } catch {
+        setAssignments([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAssignments();
+  }, []);
 
   return (
     <div className="dashboard-layout">
@@ -125,8 +130,8 @@ const TeacherAssignmentsPage = () => {
           </div>
 
           <div className={`assignments-container ${viewMode}`}>
-            {filteredAssignments.map((assignment) => (
-              <div key={assignment.id} className={`assignment-card ${viewMode}`}>
+            {loading ? <div>Loading assignments...</div> : filteredAssignments.map((assignment) => (
+              <div key={assignment._id} className={`assignment-card ${viewMode}`}>
                 <div className="card-top">
                   <div className="course-info">
                     <span className="course-name">{assignment.topic}</span>
@@ -153,7 +158,7 @@ const TeacherAssignmentsPage = () => {
                     <span>{assignment.deadline}</span>
                   </div>
                   <div className="card-actions">
-                    <button className="action-btn primary" onClick={() => navigate(`/teacher/assignment/view/${assignment.id}`)}>
+                    <button className="action-btn primary" onClick={() => navigate(`/teacher/assignment/view/${assignment._id}`)}>
                       View
                     </button>
                   </div>

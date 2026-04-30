@@ -1,54 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import '../../styles/performanceCard.css';
 
-const TeacherPerformanceCard = () => {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [improvement, setImprovement] = useState(0);
-
-  useEffect(() => {
-    // Generate data for the last 5 months
-    const generateData = () => {
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const currentDate = new Date();
-      const currentMonthIndex = currentDate.getMonth();
-      
-      const mockData = [];
-      // Let's generate some realistic looking assignment counts
-      const baseCount = 10;
-      
-      for (let i = 4; i >= 0; i--) {
-        let monthIndex = currentMonthIndex - i;
-        if (monthIndex < 0) {
-          monthIndex += 12;
-        }
-        
-        const count = baseCount + Math.floor(Math.random() * 15);
-        mockData.push({
-          name: months[monthIndex],
-          shortName: months[monthIndex],
-          score: count, // Using 'score' to reuse the same AreaChart keys as PerformanceCard
-          trend: count * 0.8 + (Math.random() * 5)
-        });
-      }
-      
-      setData(mockData);
-      
-      // Calculate improvement
-      if (mockData.length >= 2) {
-        const current = mockData[mockData.length - 1].score;
-        const last = mockData[mockData.length - 2].score;
-        const imp = Math.round(((current - last) / (last || 1)) * 100);
-        setImprovement(imp);
-      }
-      
-      setLoading(false);
-    };
-
-    // Simulate API delay
-    setTimeout(generateData, 500);
-  }, []);
+const TeacherPerformanceCard = ({ data = [], improvement = 0, loading = false }) => {
 
   if (loading) {
     return (

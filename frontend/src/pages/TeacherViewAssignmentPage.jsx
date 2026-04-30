@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import DashboardSidebar from '../components/dashboard/DashboardSidebar.jsx';
 import DashboardHeader from '../components/dashboard/DashboardHeader.jsx';
+import { apiCall, API_CONFIG } from '../lib/apiConfig.js';
 import '../styles/teacherDashboard.css';
 import '../styles/teacherViewAssignment.css';
 
@@ -18,31 +19,22 @@ const TeacherViewAssignmentPage = () => {
   }, []);
 
   useEffect(() => {
-    const fetchAssignment = () => {
+    const fetchAssignment = async () => {
       setLoading(true);
-      const assignments = JSON.parse(localStorage.getItem("gradion_assignments") || "[]");
-      const found = assignments.find(a => a.id.toString() === id);
-      if (found) {
-        setAssignment(found);
-      } else {
-        // Fallback for mocked assignments if they don't exist in local storage yet
-        const mockData = [
-          { id: 1, title: "Advanced Data Structures", topic: "Data Structures", difficulty: "Medium", deadline: "2026-10-28", status: "published", description: "Implement a Red-Black Tree.", questions: [] },
-          { id: 2, title: "Operating Systems Project", topic: "Algorithms", difficulty: "Hard", deadline: "2026-11-02", status: "published", description: "Design an OS scheduler.", questions: [] }
-        ];
-        const mockFound = mockData.find(a => a.id.toString() === id);
-        if (mockFound) setAssignment(mockFound);
+      try {
+        const response = await apiCall(`${API_CONFIG.ENDPOINTS.ASSIGNMENTS}/${id}`);
+        setAssignment(response.assignment || null);
+      } catch {
+        setAssignment(null);
       }
       setLoading(false);
     };
     fetchAssignment();
   }, [id]);
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (window.confirm("Are you sure you want to delete this assignment?")) {
-      const assignments = JSON.parse(localStorage.getItem("gradion_assignments") || "[]");
-      const newAssignments = assignments.filter(a => a.id.toString() !== id);
-      localStorage.setItem("gradion_assignments", JSON.stringify(newAssignments));
+      await apiCall(`${API_CONFIG.ENDPOINTS.ASSIGNMENTS}/${id}`, "DELETE");
       navigate("/teacher-dashboard");
     }
   };

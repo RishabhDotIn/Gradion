@@ -9,7 +9,9 @@ dotenv.config();
 
 // Import models and middleware
 const User = require('./models/User');
+const Assignment = require('./models/Assignment');
 const { auth, roleAuth } = require('./middleware/auth');
+const assignmentRoutes = require('./routes/assignmentRoutes');
 
 // Initialize Express app
 const app = express();
@@ -38,6 +40,7 @@ const connectDB = async () => {
 connectDB();
 
 // Routes
+app.use('/api/assignments', assignmentRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -276,6 +279,26 @@ app.get('/api/performance', auth, (req, res) => {
     success: true,
     scores: [65, 72, 80, 75, 90]
   });
+});
+
+app.get('/api/dashboard/stats', auth, roleAuth('teacher'), async (req, res) => {
+  try {
+    const totalAssignments = await Assignment.countDocuments({ teacher: req.user.userId });
+    const totalStudents = await User.countDocuments({ role: 'student', isActive: true });
+
+    res.json({
+      success: true,
+      totalAssignments,
+      totalStudents,
+      totalSubmissions: 0,
+      pendingReviews: 0
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to load dashboard stats'
+    });
+  }
 });
 
 // Error handling middleware

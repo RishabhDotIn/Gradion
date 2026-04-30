@@ -4,6 +4,8 @@ export const API_CONFIG = {
     REGISTER: "/api/auth/register",
     LOGIN: "/api/auth/login",
     VERIFY: "/api/auth/verify",
+    ASSIGNMENTS: "/api/assignments",
+    ASSIGNMENTS_RECENT: "/api/assignments/recent",
   },
 };
 
