@@ -220,6 +220,11 @@
     color: #15803d;
 }
 
+.status-label.evaluated {
+    background: #f1f5ff;
+    color: #6C63FF;
+}
+
 .status-label.closed {
     background: #fee2e2;
     color: #b91c1c;
@@ -260,20 +265,33 @@
 }
 
 .card-bottom {
-    padding: 16px 24px;
-    border-top: 1px solid #f8fafc;
+    padding: 12px 32px; /* Increased horizontal space */
+    border-top: 1px solid #f1f5f9;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #fcfdfe;
+    background: #f8fafc;
     gap: 12px;
-    flex-wrap: wrap;
 }
 
 .student-view .card-bottom {
-    justify-content: flex-start;
-    gap: 24px;
-    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.due-date {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    white-space: nowrap;
+}
+
+.due-date i {
+    color: #6C63FF;
+    font-size: 16px;
 }
 
 .assignment-card.list .card-bottom {
@@ -286,20 +304,6 @@
     background: transparent;
 }
 
-.due-date {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #475569;
-    white-space: nowrap;
-}
-
-.due-date i {
-    color: #6C63FF;
-}
-
 .action-btn {
     padding: 10px 20px;
     border-radius: 12px;
@@ -310,9 +314,10 @@
 }
 
 .student-view .action-btn {
-    padding: 4px 14px;
+    padding: 6px 20px;
     border-radius: 25px;
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: 700;
 }
 
 .action-btn.primary {
@@ -328,14 +333,21 @@
 }
 
 .action-btn.secondary {
-    background: transparent;
-    color: #64748b;
-    border: 1px solid #e2e8f0;
+    background: #6C63FF;
+    color: #ffffff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 13px;
+    box-shadow: 0 4px 10px rgba(108, 99, 255, 0.2);
+    transition: all 0.2s ease;
 }
 
 .action-btn.secondary:hover {
-    background: #f8fafc;
-    border-color: #cbd5e1;
+    background: #5a52e0;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(108, 99, 255, 0.3);
 }
 
 /* Responsive */

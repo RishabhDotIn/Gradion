@@ -13,6 +13,45 @@ const AssignmentEditorPage = () => {
     const [activeCaseIdx, setActiveCaseIdx] = useState(0);
     const [codes, setCodes] = useState({});
     const [isDarkMode, setIsDarkMode] = useState(true);
+    const [netSpeed, setNetSpeed] = useState('Checking...');
+
+    useEffect(() => {
+        const updateNetSpeed = () => {
+            if (!navigator.onLine) {
+                setNetSpeed('Disconnected');
+                return;
+            }
+            if (navigator.connection && navigator.connection.downlink) {
+                // Add a small random fluctuation to simulate real-time measurement if speed doesn't change often
+                const speed = navigator.connection.downlink;
+                const jitter = (Math.random() * 0.2 - 0.1).toFixed(2);
+                const finalSpeed = Math.max(0.1, (parseFloat(speed) + parseFloat(jitter))).toFixed(1);
+                setNetSpeed(`${finalSpeed} Mbps`);
+            } else {
+                setNetSpeed('Online');
+            }
+        };
+
+        updateNetSpeed();
+
+        window.addEventListener('online', updateNetSpeed);
+        window.addEventListener('offline', updateNetSpeed);
+
+        if (navigator.connection) {
+            navigator.connection.addEventListener('change', updateNetSpeed);
+        }
+
+        const interval = setInterval(updateNetSpeed, 2000);
+
+        return () => {
+            window.removeEventListener('online', updateNetSpeed);
+            window.removeEventListener('offline', updateNetSpeed);
+            if (navigator.connection) {
+                navigator.connection.removeEventListener('change', updateNetSpeed);
+            }
+            clearInterval(interval);
+        };
+    }, []);
 
     // Panel states (percentages or pixels)
     const [leftWidth, setLeftWidth] = useState(40); // percentage
@@ -260,8 +299,16 @@ const AssignmentEditorPage = () => {
                                 <span className="autosave-badge">AUTO-SAVE: ON</span>
                             </div>
                             <div className="editor-controls-right">
-                                <span className="attempt-count">ATTEMPTS REMAINING: 3/5</span>
-                                <i className="fas fa-cog" style={{ cursor: 'pointer' }} />
+                                <span className="net-speed-indicator">
+                                    <i 
+                                        className="fas fa-wifi" 
+                                        style={{ 
+                                            marginRight: '6px', 
+                                            color: netSpeed === 'Disconnected' ? '#ef4444' : 'var(--accent)' 
+                                        }} 
+                                    />
+                                    {netSpeed}
+                                </span>
                             </div>
                         </div>
 

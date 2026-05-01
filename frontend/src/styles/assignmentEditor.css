@@ -377,11 +377,13 @@
     margin-left: 15px;
 }
 
-.attempt-count {
+.net-speed-indicator {
     font-size: 11px;
     color: var(--text-secondary);
     font-weight: 600;
     margin-right: 15px;
+    display: flex;
+    align-items: center;
 }
 
 .code-area-wrapper {
