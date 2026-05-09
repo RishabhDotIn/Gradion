@@ -1,17 +1,19 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const { body, validationResult } = require('express-validator');
+const connectDB = require('./config/db');
+const { auth, roleAuth } = require('./middleware/authMiddleware');
+const authRoutes = require('./routes/authRoutes');
+const assignmentRoutes = require('./routes/assignmentRoutes');
+const {
+  studentDashboard,
+  teacherDashboard,
+  performance,
+  dashboardStats,
+} = require('./controllers/authController');
 
 // Load environment variables
 dotenv.config();
-
-// Import models and middleware
-const User = require('./models/User');
-const Assignment = require('./models/Assignment');
-const { auth, roleAuth } = require('./middleware/auth');
-const assignmentRoutes = require('./routes/assignmentRoutes');
 
 // Initialize Express app
 const app = express();
@@ -21,25 +23,11 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// MongoDB Connection
-const connectDB = async () => {
-  try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
-  } catch (error) {
-    console.error('MongoDB connection error:', error.message);
-    process.exit(1);
-  }
-};
-
 // Connect to MongoDB
 connectDB();
 
 // Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/assignments', assignmentRoutes);
 
 // Health check
@@ -52,254 +40,11 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Register route
-app.post('/api/auth/register', [
-  body('fullName')
-    .trim()
-    .isLength({ min: 2, max: 50 })
-    .withMessage('Full name must be between 2 and 50 characters'),
-  body('email')
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('Please provide a valid email'),
-  body('password')
-    .isLength({ min: 6 })
-    .withMessage('Password must be at least 6 characters long'),
-  body('role')
-    .isIn(['student', 'teacher'])
-    .withMessage('Role must be either student or teacher')
-], async (req, res) => {
-  try {
-    // Check validation errors
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation failed',
-        errors: errors.array()
-      });
-    }
-
-    const { fullName, email, password, role } = req.body;
-
-    // Check if user already exists
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: 'Email already registered'
-      });
-    }
-
-    // Create new user
-    const user = new User({
-      fullName,
-      email: email.toLowerCase(),
-      password,
-      role
-    });
-
-    await user.save();
-
-    // Generate JWT token
-    const jwt = require('jsonwebtoken');
-    const token = jwt.sign(
-      {
-        userId: user._id,
-        email: user.email,
-        role: user.role
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: '30d' }
-    );
-
-    // Return success response (without password)
-    res.status(201).json({
-      success: true,
-      message: 'Registration successful',
-      token,
-      user: {
-        id: user._id,
-        fullName: user.fullName,
-        email: user.email,
-        role: user.role,
-        createdAt: user.createdAt
-      }
-    });
-
-  } catch (error) {
-    console.error('Registration error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Registration failed. Please try again.'
-    });
-  }
-});
-
-// Login route
-app.post('/api/auth/login', [
-  body('email')
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('Please provide a valid email'),
-  body('password')
-    .notEmpty()
-    .withMessage('Password is required')
-], async (req, res) => {
-  try {
-    // Check validation errors
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation failed',
-        errors: errors.array()
-      });
-    }
-
-    const { email, password, rememberMe } = req.body;
-
-    // Find user by email and include password for comparison
-    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid email or password'
-      });
-    }
-
-    // Check if account is active
-    if (!user.isActive) {
-      return res.status(401).json({
-        success: false,
-        message: 'Account is deactivated. Please contact support.'
-      });
-    }
-
-    // Check password
-    const isPasswordValid = await user.comparePassword(password);
-    if (!isPasswordValid) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid email or password'
-      });
-    }
-
-    // Update last login
-    await user.updateLastLogin();
-
-    // Generate JWT token
-    const jwt = require('jsonwebtoken');
-    const expiresIn = rememberMe ? '90d' : '30d';
-    const token = jwt.sign(
-      {
-        userId: user._id,
-        email: user.email,
-        role: user.role
-      },
-      process.env.JWT_SECRET,
-      { expiresIn }
-    );
-
-    // Return success response
-    res.json({
-      success: true,
-      message: 'Login successful',
-      token,
-      user: {
-        id: user._id,
-        fullName: user.fullName,
-        email: user.email,
-        role: user.role,
-        lastLogin: user.lastLogin
-      }
-    });
-
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Login failed. Please try again.'
-    });
-  }
-});
-
-// Verify token route
-app.get('/api/auth/verify', auth, async (req, res) => {
-  try {
-    // Get user details (excluding password)
-    const user = await User.findById(req.user.userId);
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: 'User not found'
-      });
-    }
-
-    res.json({
-      success: true,
-      message: 'Token is valid',
-      user: {
-        id: user._id,
-        fullName: user.fullName,
-        email: user.email,
-        role: user.role,
-        lastLogin: user.lastLogin
-      }
-    });
-
-  } catch (error) {
-    console.error('Token verification error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Token verification failed'
-    });
-  }
-});
-
 // Protected routes examples
-app.get('/api/dashboard/student', auth, roleAuth('student'), (req, res) => {
-  res.json({
-    success: true,
-    message: 'Welcome to student dashboard',
-    user: req.user
-  });
-});
-
-app.get('/api/dashboard/teacher', auth, roleAuth('teacher'), (req, res) => {
-  res.json({
-    success: true,
-    message: 'Welcome to teacher dashboard',
-    user: req.user
-  });
-});
-
-app.get('/api/performance', auth, (req, res) => {
-  res.json({
-    success: true,
-    scores: [65, 72, 80, 75, 90]
-  });
-});
-
-app.get('/api/dashboard/stats', auth, roleAuth('teacher'), async (req, res) => {
-  try {
-    const totalAssignments = await Assignment.countDocuments({ teacher: req.user.userId });
-    const totalStudents = await User.countDocuments({ role: 'student', isActive: true });
-
-    res.json({
-      success: true,
-      totalAssignments,
-      totalStudents,
-      totalSubmissions: 0,
-      pendingReviews: 0
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to load dashboard stats'
-    });
-  }
-});
+app.get('/api/dashboard/student', auth, roleAuth('student'), studentDashboard);
+app.get('/api/dashboard/teacher', auth, roleAuth('teacher'), teacherDashboard);
+app.get('/api/performance', auth, performance);
+app.get('/api/dashboard/stats', auth, roleAuth('teacher'), dashboardStats);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -328,12 +73,14 @@ app.listen(PORT, () => {
 // Graceful shutdown
 process.on('SIGINT', async () => {
   console.log('\n🛑 Shutting down server...');
+  const mongoose = require('mongoose');
   await mongoose.connection.close();
   process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
   console.log('\n🛑 Shutting down server...');
+  const mongoose = require('mongoose');
   await mongoose.connection.close();
   process.exit(0);
 });
