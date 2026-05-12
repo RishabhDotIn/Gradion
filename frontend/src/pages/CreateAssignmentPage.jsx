@@ -1,6 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import DashboardSidebar from "../components/dashboard/DashboardSidebar.jsx";
+import DashboardHeader from "../components/dashboard/DashboardHeader.jsx";
 import { apiCall, API_CONFIG } from "../lib/apiConfig.js";
 import "../styles/teacherDashboard.css";
 import "../styles/createAssignment.css";
@@ -30,6 +31,12 @@ function CreateAssignmentPage() {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const editId = queryParams.get("edit");
+
+  const user = useMemo(() => {
+    const userStr = localStorage.getItem("user") || sessionStorage.getItem("user");
+    if (!userStr) return null;
+    try { return JSON.parse(userStr); } catch { return null; }
+  }, []);
 
   useEffect(() => {
     const loadAssignment = async () => {
@@ -85,19 +92,7 @@ function CreateAssignmentPage() {
     <div className="dashboard-layout">
       <DashboardSidebar />
       <div className="dashboard-main">
-        <header className="dashboard-header">
-          <div className="header-left"><h1 className="header-title">{editId ? "Edit Assignment" : "Create Assignment"}</h1></div>
-          <div className="header-right">
-            <div className="header-search"><i className="fas fa-search" /><input type="text" placeholder="Search anything" /></div>
-            <button className="header-icon-btn" type="button"><i className="fas fa-envelope" /></button>
-            <button className="header-icon-btn" type="button"><i className="fas fa-bell" /></button>
-            <div className="header-user">
-              <div className="header-avatar"><img id="userAvatar" src="https://ui-avatars.com/api/?name=User&background=3B82F6&color=fff" alt="Profile" /></div>
-              <div className="header-user-info"><span className="header-user-name" id="userName">Loading...</span><span className="header-user-role" id="userRole">Teacher</span></div>
-              <i className="fas fa-chevron-down" />
-            </div>
-          </div>
-        </header>
+        <DashboardHeader user={user} />
         <main className="dashboard-content">
           <div className="step-progress">
             <div className={`step-item ${step === 1 ? "active" : step > 1 ? "completed" : ""}`} data-step="1"><div className="step-number">1</div><span className="step-label">Assignment Details</span></div><div className={`step-line ${step > 1 ? "active" : ""}`} />

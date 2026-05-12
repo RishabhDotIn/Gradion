@@ -24,9 +24,22 @@ function LoginPage() {
         rememberMe,
       });
       if (!data.success) throw new Error(data.message || "Login was not successful");
-      if (data.token) localStorage.setItem("token", data.token);
-      if (data.user) localStorage.setItem("user", JSON.stringify(data.user));
-      else localStorage.setItem("user", JSON.stringify({ email }));
+      if (data.token) {
+        // Use sessionStorage instead of localStorage for better security
+        sessionStorage.setItem("token", data.token);
+      }
+      if (data.user) {
+        // Sanitize user data before storing
+        const sanitizedUser = {
+          id: data.user.id,
+          fullName: data.user.fullName,
+          email: data.user.email,
+          role: data.user.role
+        };
+        sessionStorage.setItem("user", JSON.stringify(sanitizedUser));
+      } else {
+        sessionStorage.setItem("user", JSON.stringify({ email }));
+      }
       setTimeout(() => {
         if (data.user && data.user.role === "teacher") {
           navigate("/teacher-dashboard");

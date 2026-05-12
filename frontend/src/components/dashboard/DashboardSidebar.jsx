@@ -1,7 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth.js";
 
 function DashboardSidebar({ menuItems }) {
   const location = useLocation();
+  const { user } = useAuth();
 
   const defaultItems = [
     { path: "/teacher-dashboard", icon: "fas fa-th-large", label: "Dashboard" },
@@ -17,7 +19,7 @@ function DashboardSidebar({ menuItems }) {
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
-        <Link to="/" className="sidebar-logo">
+        <Link to={user?.role === 'teacher' ? '/teacher-dashboard' : user?.role === 'student' ? '/student-dashboard' : '/'} className="sidebar-logo">
           <div className="logo-icon"><i className="fas fa-graduation-cap" /></div>
           <span className="logo-text">Gradion</span>
         </Link>

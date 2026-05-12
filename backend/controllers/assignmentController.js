@@ -211,6 +211,84 @@ const deleteAssignment = async (req, res) => {
   }
 };
 
+// Student assignment routes
+const getStudentAssignments = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = Math.min(parseInt(req.query.limit) || 10, 50);
+    const skip = (page - 1) * limit;
+
+    const assignments = await Assignment.find({
+      status: 'published',
+      deadline: { $gt: new Date() }
+    })
+      .select('title description topic difficulty deadline createdAt')
+      .sort({ deadline: 1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    const total = await Assignment.countDocuments({
+      status: 'published',
+      deadline: { $gt: new Date() }
+    });
+
+    return res.json({
+      success: true,
+      assignments,
+      pagination: {
+        current: page,
+        pages: Math.ceil(total / limit),
+        total,
+        limit
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch assignments",
+      error: error.message,
+    });
+  }
+};
+
+const getStudentAssignmentById = async (req, res) => {
+  try {
+    const assignment = await Assignment.findOne({
+      _id: req.params.id,
+      status: 'published'
+    })
+      .select('title description topic difficulty deadline questions createdAt')
+      .lean();
+
+    if (!assignment) {
+      return res.status(404).json({
+        success: false,
+        message: "Assignment not found",
+      });
+    }
+
+    // Check if assignment is still open
+    if (assignment.deadline < new Date()) {
+      return res.status(410).json({
+        success: false,
+        message: "Assignment deadline has passed",
+      });
+    }
+
+    return res.json({
+      success: true,
+      assignment,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch assignment",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createAssignment,
   getTeacherAssignments,
@@ -219,4 +297,6 @@ module.exports = {
   getAssignmentById,
   updateAssignment,
   deleteAssignment,
+  getStudentAssignments,
+  getStudentAssignmentById,
 };

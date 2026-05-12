@@ -1,6 +1,9 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth.js";
 
 function HeroSection() {
+  const { isAuthenticated, user } = useAuth();
+  const navigate = useNavigate();
   return (
     <section className="hero">
       <div className="hero-grid" />
@@ -20,14 +23,26 @@ function HeroSection() {
           educators and students.
         </p>
         <div className="hero-buttons">
-          <Link to="/register" className="btn-primary">
-            <i className="fas fa-rocket" />
-            Get Started
-          </Link>
-          <button className="btn-secondary" type="button">
-            <i className="fas fa-play-circle" />
-            Watch Demo
-          </button>
+          {isAuthenticated ? (
+            <button 
+              className="btn-primary btn-dashboard" 
+              onClick={() => navigate(user?.role === 'teacher' ? '/teacher-dashboard' : '/student-dashboard')}
+            >
+              <i className="fas fa-tachometer-alt" />
+              Go to Dashboard
+            </button>
+          ) : (
+            <>
+              <Link to="/register" className="btn-primary">
+                <i className="fas fa-rocket" />
+                Get Started
+              </Link>
+              <button className="btn-secondary" type="button">
+                <i className="fas fa-play-circle" />
+                Watch Demo
+              </button>
+            </>
+          )}
         </div>
         <div className="hero-stats">
           <div className="stat-item">

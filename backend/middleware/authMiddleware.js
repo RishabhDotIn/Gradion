@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
+const TokenBlacklist = require("../models/TokenBlacklist");
 
-const auth = (req, res, next) => {
+const auth = async (req, res, next) => {
   try {
     const token = req.header("Authorization")?.replace("Bearer ", "");
 
@@ -11,10 +12,26 @@ const auth = (req, res, next) => {
       });
     }
 
+    // Check if token is blacklisted
+    const blacklistedToken = await TokenBlacklist.findOne({ token });
+    if (blacklistedToken) {
+      return res.status(401).json({
+        success: false,
+        message: "Token has been revoked. Please login again.",
+      });
+    }
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
+    req.token = token;
     return next();
   } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({
+        success: false,
+        message: "Token expired. Please login again.",
+      });
+    }
     return res.status(401).json({
       success: false,
       message: "Invalid token",

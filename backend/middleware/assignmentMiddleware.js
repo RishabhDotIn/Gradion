@@ -6,7 +6,18 @@ const assignmentValidations = [
   body("difficulty")
     .isIn(["easy", "medium", "hard"])
     .withMessage("Difficulty must be easy, medium, or hard"),
-  body("deadline").notEmpty().withMessage("Deadline is required"),
+  body("deadline")
+    .notEmpty()
+    .withMessage("Deadline is required")
+    .isISO8601()
+    .withMessage("Deadline must be a valid date")
+    .custom((value) => {
+      const deadline = new Date(value);
+      if (deadline <= new Date()) {
+        throw new Error("Deadline must be in the future");
+      }
+      return true;
+    }),
 ];
 
 const validateAssignmentRequest = (req, res, next) => {

@@ -68,4 +68,11 @@ userSchema.methods.updateLastLogin = function() {
   return this.save({ validateBeforeSave: false });
 };
 
+// Create indexes for better performance
+userSchema.index({ email: 1 }, { unique: true });
+userSchema.index({ role: 1 });
+userSchema.index({ isActive: 1 });
+userSchema.index({ createdAt: -1 });
+userSchema.index({ lastLogin: -1 });
+
 module.exports = mongoose.model('User', userSchema);
