@@ -2,6 +2,7 @@ const { validationResult } = require("express-validator");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const Assignment = require("../models/Assignment");
+const TokenBlacklist = require("../models/TokenBlacklist");
 
 const register = async (req, res) => {
   try {
@@ -187,6 +188,80 @@ const performance = (req, res) => {
   });
 };
 
+const logout = async (req, res) => {
+  try {
+    const token = req.token;
+    const decoded = jwt.decode(token);
+    
+    // Add token to blacklist
+    await TokenBlacklist.create({
+      token,
+      userId: decoded.userId,
+      expiresAt: new Date(decoded.exp * 1000),
+      reason: 'logout'
+    });
+
+    return res.json({
+      success: true,
+      message: "Logout successful",
+    });
+  } catch (error) {
+    console.error("Logout error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Logout failed",
+    });
+  }
+};
+
+const refreshToken = async (req, res) => {
+  try {
+    const token = req.token;
+    const decoded = jwt.decode(token);
+    
+    // Check if token is close to expiration (within 5 minutes)
+    const timeUntilExpiry = decoded.exp * 1000 - Date.now();
+    if (timeUntilExpiry > 5 * 60 * 1000) {
+      return res.json({
+        success: true,
+        message: "Token is still valid",
+        token: token,
+      });
+    }
+
+    // Generate new token
+    const newToken = jwt.sign(
+      {
+        userId: decoded.userId,
+        email: decoded.email,
+        role: decoded.role,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "30d" }
+    );
+
+    // Blacklist old token
+    await TokenBlacklist.create({
+      token,
+      userId: decoded.userId,
+      expiresAt: new Date(decoded.exp * 1000),
+      reason: 'refresh'
+    });
+
+    return res.json({
+      success: true,
+      message: "Token refreshed successfully",
+      token: newToken,
+    });
+  } catch (error) {
+    console.error("Token refresh error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Token refresh failed",
+    });
+  }
+};
+
 const dashboardStats = async (req, res) => {
   try {
     const totalAssignments = await Assignment.countDocuments({ teacher: req.user.userId });
@@ -211,6 +286,8 @@ module.exports = {
   register,
   login,
   verifyToken,
+  logout,
+  refreshToken,
   studentDashboard,
   teacherDashboard,
   performance,

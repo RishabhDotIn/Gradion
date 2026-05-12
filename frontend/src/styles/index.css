@@ -113,6 +113,64 @@ body {
     box-shadow: 0 8px 25px rgba(59, 130, 246, 0.35);
 }
 
+/* User Profile Styles in Navbar */
+.nav-user-profile {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.nav-user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.nav-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--primary);
+}
+
+.nav-user-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.nav-user-role {
+    font-size: 12px;
+    color: var(--text-gray);
+    background: var(--bg-gray);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+.btn-logout {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    background: transparent;
+    color: var(--text-gray);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-logout:hover {
+    background: #fee2e2;
+    color: #dc2626;
+    border-color: #dc2626;
+    transform: translateY(-1px);
+}
+
 /* Button links (anchor styled as buttons) */
 a.btn-login,
 a.btn-primary {
@@ -245,6 +303,36 @@ a.btn-primary {
 .btn-primary:hover {
     background: var(--primary-dark);
     transform: translateY(-3px);
+}
+
+/* Dashboard button specific styling */
+.btn-dashboard {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-dashboard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.6s;
+}
+
+.btn-dashboard:hover::before {
+    left: 100%;
+}
+
+.btn-dashboard:hover {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, #1e40af 100%);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 12px 40px rgba(59, 130, 246, 0.4);
 }
 
 .btn-secondary {

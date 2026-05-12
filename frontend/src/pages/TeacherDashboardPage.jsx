@@ -41,25 +41,15 @@ function TeacherDashboardPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const [statsResult, assignmentsResult, performanceResult, submissionsResult] = await Promise.allSettled([
+        const [statsResult, assignmentsResult, performanceResult] = await Promise.allSettled([
           apiCall("/api/dashboard/stats"),
-          apiCall(`${API_CONFIG.ENDPOINTS.ASSIGNMENTS_RECENT}?limit=5`),
-          apiCall(`${API_CONFIG.ENDPOINTS.ASSIGNMENTS}/performance`),
-          fetch(`${API_CONFIG.BASE_URL}/api/submissions/recent?limit=5`, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }),
+          apiCall(`${API_CONFIG.ENDPOINTS.TEACHER_RECENT}?limit=5`),
+          apiCall(`${API_CONFIG.ENDPOINTS.TEACHER_PERFORMANCE}`),
         ]);
         const statsData = statsResult.status === "fulfilled" ? statsResult.value : {};
         const assignmentsData = assignmentsResult.status === "fulfilled" ? assignmentsResult.value : [];
         const performanceData = performanceResult.status === "fulfilled" ? performanceResult.value : {};
-        let submissionsData = [];
-        if (submissionsResult.status === "fulfilled" && submissionsResult.value.ok) {
-          submissionsData = await submissionsResult.value.json();
-        }
+        const submissionsData = MOCK_SUBMISSIONS;
         setStats({
           totalAssignments: statsData.totalAssignments || 0,
           totalStudents: statsData.totalStudents || 0,

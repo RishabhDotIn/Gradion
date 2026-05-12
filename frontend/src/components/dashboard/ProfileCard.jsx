@@ -68,7 +68,9 @@ const ProfileCard = ({ user, compact }) => {
           />
         </div>
         <h2 className="user-name">{user?.fullName || "Andreas Iniesta"}</h2>
-        <p className="user-role">College Student</p>
+        <p className="user-role">
+          {user?.role === 'teacher' ? 'Teacher' : user?.role === 'student' ? 'Student' : 'College Student'}
+        </p>
       </div>
 
       <div className="date-nav-section">

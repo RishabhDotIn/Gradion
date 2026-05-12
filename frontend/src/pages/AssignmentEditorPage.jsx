@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
+
 import { apiCall, API_CONFIG } from '../lib/apiConfig.js';
+import DashboardSidebar from '../components/dashboard/DashboardSidebar.jsx';
+import DashboardHeader from '../components/dashboard/DashboardHeader.jsx';
+
 import '../styles/assignmentEditor.css';
 
 const AssignmentEditorPage = () => {
@@ -14,6 +18,12 @@ const AssignmentEditorPage = () => {
     const [codes, setCodes] = useState({});
     const [isDarkMode, setIsDarkMode] = useState(true);
     const [netSpeed, setNetSpeed] = useState('Checking...');
+
+    const user = useMemo(() => {
+        const userStr = localStorage.getItem("user") || sessionStorage.getItem("user");
+        if (!userStr) return null;
+        try { return JSON.parse(userStr); } catch { return null; }
+    }, []);
 
     useEffect(() => {
         const updateNetSpeed = () => {
@@ -59,12 +69,6 @@ const AssignmentEditorPage = () => {
 
     const isResizingH = useRef(false);
     const isResizingV = useRef(false);
-
-    const user = useMemo(() => {
-        const userStr = localStorage.getItem("user") || sessionStorage.getItem("user");
-        if (!userStr) return null;
-        try { return JSON.parse(userStr); } catch { return null; }
-    }, []);
 
     useEffect(() => {
         const loadAssignment = async () => {
@@ -166,21 +170,26 @@ const AssignmentEditorPage = () => {
     if (!assignment || !currentQuestion) return <div className="loading-screen">Loading Editor...</div>;
 
     return (
-        <div className={`editor-page-container ${isDarkMode ? 'dark-theme' : 'light-theme'}`}>
-            <nav className="editor-navbar">
-                <div className="nav-left">
+        <div className="dashboard-layout">
+            <DashboardSidebar />
+            <div className="dashboard-main">
+                <DashboardHeader user={user} />
+                <div className={`editor-page-container ${isDarkMode ? 'dark-theme' : 'light-theme'}`}>
+                    <nav className="editor-navbar">
+                        <div className="nav-left">
                     <div className="nav-logo">
                         <div className="logo-icon">
                             <i className="fas fa-graduation-cap" />
                         </div>
                         <span className="logo-text" style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--text-primary)' }}>Gradion</span>
-                    </div>
-                    <button className="nav-dashboard-btn" onClick={() => navigate('/student-assignments')} title="Back to Assignments">
-                        <i className="fas fa-th-large"></i>
-                    </button>
-                    <div className="nav-divider" />
-                    <div className="nav-assignment-info">
-                        <span className="nav-assignment-title">{assignment.title}</span>
+                        </div>
+                        <button className="nav-dashboard-btn" onClick={() => navigate('/student-assignments')} title="Back to Assignments">
+                            <i className="fas fa-th-large"></i>
+                        </button>
+                        <div className="nav-divider" />
+                        <div className="nav-assignment-info">
+                            <span className="nav-assignment-title">{assignment.title}</span>
+                        </div>
                     </div>
                     <div className="nav-question-nav">
                         <button 
@@ -207,39 +216,32 @@ const AssignmentEditorPage = () => {
                             <i className="fas fa-chevron-right"></i>
                         </button>
                     </div>
-                </div>
-
-                <div className="nav-right">
-                    <button className="theme-toggle" onClick={() => setIsDarkMode(!isDarkMode)}>
-                        <i className={`fas ${isDarkMode ? 'fa-sun' : 'fa-moon'}`}></i>
-                    </button>
-                    <div className="nav-user">
-                        <img 
-                            src={user?.avatar || "https://ui-avatars.com/api/?name=" + (user?.name || "User")} 
-                            alt="User" 
-                            className="nav-avatar" 
-                        />
-                        <span className="nav-username">{user?.name || "Student"}</span>
-                    </div>
-                </div>
-            </nav>
-
-            <div className="editor-main-content">
-                {/* Problem Panel */}
-                <div className="problem-panel" style={{ width: `${leftWidth}%` }}>
-                    <div className="problem-header">
-                        <div className="problem-meta">
-                            <span className={`meta-badge ${currentQuestion.difficulty?.toLowerCase() || 'medium'}`}>
-                                {currentQuestion.difficulty || 'Medium'}
-                            </span>
-                            <span className="meta-time">
-                                <i className="far fa-clock" /> 45 mins limit
-                            </span>
+                    <div className="nav-right">
+                        <button className="theme-toggle" onClick={() => setIsDarkMode(!isDarkMode)}>
+                            <i className={`fas ${isDarkMode ? 'fa-sun' : 'fa-moon'}`}></i>
+                        </button>
+                        <div className="nav-user">
+                            <img 
+                                src={user?.avatar || "https://ui-avatars.com/api/?name=" + (user?.name || "User")} 
+                                alt="User" 
+                                className="nav-avatar" 
+                            />
+                            <span className="nav-username">{user?.name || "Student"}</span>
                         </div>
-                        <h1 className="problem-title">{currentQuestion.problemTitle}</h1>
                     </div>
+                </nav>
 
-                    <div className="problem-description">
+                <div className="problem-header">
+                    <span className={`meta-badge ${currentQuestion.difficulty?.toLowerCase() || 'medium'}`}>
+                        {currentQuestion.difficulty || 'Medium'}
+                    </span>
+                    <span className="meta-time">
+                        <i className="far fa-clock" /> 45 mins limit
+                    </span>
+                    <h1 className="problem-title">{currentQuestion.problemTitle}</h1>
+                </div>
+
+                <div className="problem-description">
                         {currentQuestion.problemDescription}
                     </div>
 

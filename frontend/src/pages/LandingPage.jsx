@@ -15,7 +15,7 @@ function LandingPage() {
         const y = (e.clientY / window.innerHeight - 0.5) * 20;
         grid.style.transform = `translate(${x}px, ${y}px)`;
         glow.style.transform = `translate(calc(-50% + ${x * 2}px), calc(-50% + ${y * 2}px))`;
-      }
+      }83
     };
 
     const onScroll = () => {
@@ -29,58 +29,55 @@ function LandingPage() {
     document.addEventListener("mousemove", onMouseMove);
     window.addEventListener("scroll", onScroll);
 
-    const statNumbers = document.querySelectorAll(".stat-number");
-    let animated = false;
-    const originalValues = [];
-    statNumbers.forEach((stat, index) => {
-      originalValues[index] = stat.textContent;
-      const text = stat.textContent;
-      if (text.includes("K")) stat.textContent = "0K+";
-      else if (text.includes("%")) stat.textContent = "0%";
-      else stat.textContent = "0";
-    });
-
-    function animateCounter(element, originalValue) {
-      const hasPlus = originalValue.includes("+");
-      const hasPercent = originalValue.includes("%");
-      const hasK = originalValue.includes("K");
-      const targetNumber = parseFloat(originalValue.replace(/[^0-9.]/g, ""));
-      const duration = 2000;
-      const startTime = performance.now();
-      function updateCounter(currentTime) {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-        const currentNumber = targetNumber * easeOutQuart;
-        let displayValue;
-        if (hasK) displayValue = Math.floor(currentNumber) + "K";
-        else if (hasPercent) displayValue = Math.floor(currentNumber) + "%";
-        else displayValue = Math.floor(currentNumber).toString();
-        if (hasPlus) displayValue += "+";
-        element.textContent = displayValue;
-        if (progress < 1) requestAnimationFrame(updateCounter);
+    // Initialize statistics animation with delay to ensure DOM is ready
+    const initStatsAnimation = setTimeout(() => {
+      const statNumbers = document.querySelectorAll(".stat-number");
+      console.log('Found stat elements:', statNumbers.length); // Debug log
+      
+      if (statNumbers.length === 0) {
+        console.log('No stat elements found, retrying...');
+        return;
       }
-      requestAnimationFrame(updateCounter);
-    }
-
-    function checkScroll() {
-      if (animated) return;
-      const statsSection = document.querySelector(".hero-stats");
-      if (!statsSection) return;
-      const rect = statsSection.getBoundingClientRect();
-      const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
-      if (isVisible) {
-        animated = true;
-        statNumbers.forEach((stat, index) => animateCounter(stat, originalValues[index]));
-      }
-    }
-    window.addEventListener("scroll", checkScroll);
-    setTimeout(checkScroll, 100);
+      
+      const targetValues = ['10K+', '50K+', '99%'];
+      
+      // Reset to 0
+      statNumbers.forEach((stat) => {
+        stat.textContent = stat.textContent.includes('K') ? '0K+' : '0%';
+      });
+      
+      // Animate after a short delay
+      setTimeout(() => {
+        statNumbers.forEach((stat, index) => {
+          const targetValue = targetValues[index];
+          const hasPlus = targetValue.includes("+");
+          const hasPercent = targetValue.includes("%");
+          const hasK = targetValue.includes("K");
+          const targetNumber = parseFloat(targetValue.replace(/[^0-9.]/g, ""));
+          const duration = 2000;
+          const startTime = performance.now();
+          
+          function updateCounter(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+            const currentNumber = targetNumber * easeOutQuart;
+            let displayValue;
+            if (hasK) displayValue = Math.floor(currentNumber) + "K";
+            else if (hasPercent) displayValue = Math.floor(currentNumber) + "%";
+            else displayValue = Math.floor(currentNumber).toString();
+            if (hasPlus) displayValue += "+";
+            stat.textContent = displayValue;
+            if (progress < 1) requestAnimationFrame(updateCounter);
+          }
+          requestAnimationFrame(updateCounter);
+        });
+      }, 500);
+    }, 1000);
 
     return () => {
       document.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("scroll", checkScroll);
     };
   }, []);
 

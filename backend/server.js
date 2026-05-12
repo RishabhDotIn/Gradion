@@ -3,6 +3,15 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const { auth, roleAuth } = require('./middleware/authMiddleware');
+const {
+  generalLimiter,
+  authLimiter,
+  uploadLimiter,
+  securityHeaders,
+  xssProtection,
+  sanitizeInput
+} = require('./middleware/securityMiddleware');
+const { requestLogger, logger } = require('./utils/logger');
 const authRoutes = require('./routes/authRoutes');
 const assignmentRoutes = require('./routes/assignmentRoutes');
 const {
@@ -18,16 +27,34 @@ dotenv.config();
 // Initialize Express app
 const app = express();
 
-// Middleware
-app.use(cors({ origin: true, credentials: true }));
+// Request logging middleware
+app.use(requestLogger);
+
+// Security middleware
+app.use(securityHeaders);
+app.use(sanitizeInput);
+app.use(xssProtection);
+
+// Rate limiting
+app.use(generalLimiter);
+
+// CORS configuration
+app.use(cors({ 
+  origin: ['http://localhost:3000', 'http://localhost:5173'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // Connect to MongoDB
 connectDB();
 
-// Routes
-app.use('/api/auth', authRoutes);
+// Routes with specific rate limiting
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/assignments', assignmentRoutes);
 
 // Health check
@@ -48,10 +75,18 @@ app.get('/api/dashboard/stats', auth, roleAuth('teacher'), dashboardStats);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
+  logger.error('Unhandled error', {
+    error: err.message,
+    stack: err.stack,
+    url: req.originalUrl,
+    method: req.method,
+    ip: req.ip,
+    userId: req.user?.userId || 'anonymous'
+  });
+  
   res.status(500).json({
     success: false,
-    message: 'Internal server error'
+    message: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message
   });
 });
 

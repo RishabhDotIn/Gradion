@@ -46,8 +46,14 @@ const assignmentSchema = new mongoose.Schema(
       required: [true, "Difficulty is required"],
     },
     deadline: {
-      type: String,
+      type: Date,
       required: [true, "Deadline is required"],
+      validate: {
+        validator: function(value) {
+          return value > new Date();
+        },
+        message: "Deadline must be in the future"
+      }
     },
     questions: {
       type: [questionSchema],
@@ -67,5 +73,12 @@ const assignmentSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// Create indexes for better performance
+assignmentSchema.index({ teacher: 1, createdAt: -1 });
+assignmentSchema.index({ status: 1, deadline: 1 });
+assignmentSchema.index({ topic: 1 });
+assignmentSchema.index({ difficulty: 1 });
+assignmentSchema.index({ createdAt: -1 });
 
 module.exports = mongoose.model("Assignment", assignmentSchema);

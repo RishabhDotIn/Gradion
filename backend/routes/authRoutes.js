@@ -5,6 +5,8 @@ const {
   register,
   login,
   verifyToken,
+  logout,
+  refreshToken,
 } = require("../controllers/authController");
 
 const router = express.Router();
@@ -39,5 +41,7 @@ const loginValidations = [
 router.post("/register", registerValidations, register);
 router.post("/login", loginValidations, login);
 router.get("/verify", auth, verifyToken);
+router.post("/logout", auth, logout);
+router.post("/refresh", auth, refreshToken);
 
 module.exports = router;
