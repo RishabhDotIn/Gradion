@@ -184,6 +184,85 @@ const updateAssignment = async (req, res) => {
   }
 };
 
+const getPublicAssignments = async (req, res) => {
+  try {
+    const assignments = await Assignment.find({ status: "published" })
+      .select("title description topic difficulty deadline questions status createdAt")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const normalizedAssignments = assignments.map((assignment) => ({
+      id: assignment._id,
+      title: assignment.title,
+      description: assignment.description,
+      topic: assignment.topic,
+      difficulty: assignment.difficulty.charAt(0).toUpperCase() + assignment.difficulty.slice(1),
+      deadline: new Date(assignment.deadline).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      }),
+      questionsCount: assignment.questions?.length || 0,
+      status: "Not started", // Default status for students
+    }));
+
+    return res.json({
+      success: true,
+      assignments: normalizedAssignments,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch assignments",
+      error: error.message,
+    });
+  }
+};
+
+const getPublicAssignmentById = async (req, res) => {
+  try {
+    const assignment = await Assignment.findOne({ 
+      _id: req.params.id, 
+      status: "published" 
+    })
+      .select("title description topic difficulty deadline questions status createdAt")
+      .lean();
+
+    if (!assignment) {
+      return res.status(404).json({
+        success: false,
+        message: "Assignment not found",
+      });
+    }
+
+    const normalizedAssignment = {
+      id: assignment._id,
+      title: assignment.title,
+      description: assignment.description,
+      topic: assignment.topic,
+      difficulty: assignment.difficulty.charAt(0).toUpperCase() + assignment.difficulty.slice(1),
+      deadline: new Date(assignment.deadline).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      }),
+      questions: assignment.questions || [],
+      status: "Not started", // Default status for students
+    };
+
+    return res.json({
+      success: true,
+      assignment: normalizedAssignment,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch assignment",
+      error: error.message,
+    });
+  }
+};
+
 const deleteAssignment = async (req, res) => {
   try {
     const deleted = await Assignment.findOneAndDelete({
@@ -214,6 +293,8 @@ const deleteAssignment = async (req, res) => {
 module.exports = {
   createAssignment,
   getTeacherAssignments,
+  getPublicAssignments,
+  getPublicAssignmentById,
   getRecentAssignments,
   getAssignmentPerformance,
   getAssignmentById,

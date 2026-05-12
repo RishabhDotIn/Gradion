@@ -1,7 +1,7 @@
-/* filepath: c:\Users\IRFAN\Desktop\GradionPro\Gradion\frontend\src\pages\AssignmentEditorPage.jsx */
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
+import { apiCall, API_CONFIG } from '../lib/apiConfig.js';
 import '../styles/assignmentEditor.css';
 
 const AssignmentEditorPage = () => {
@@ -67,40 +67,30 @@ const AssignmentEditorPage = () => {
     }, []);
 
     useEffect(() => {
-        // Load assignment from localStorage or Mock
-        const mockData = [
-            { id: 1, title: "Data Structures Midterm Report", topic: "Data Structures", difficulty: "Medium", deadline: "Oct 24, 2026", questions: [
-                { 
-                    problemTitle: "Longest Palindromic Substring", 
-                    problemDescription: "Given a string s, return the longest palindromic substring in s. A palindrome is a string that reads the same forward and backward.",
-                    difficulty: "Medium",
-                    constraints: "1 <= s.length <= 1000\ns consists of only digits and English letters.",
-                    starterCode: "public class Solution {\n    public String longestPalindrome(String s) {\n        // TODO: Implement logic\n        return \"\";\n    }\n}",
-                    language: "java",
-                    testCases: [
-                        { input: "s = \"babad\"", output: "\"bab\"" },
-                        { input: "s = \"cbbd\"", output: "\"bb\"" }
-                    ]
+        const loadAssignment = async () => {
+            try {
+                const response = await apiCall(`${API_CONFIG.ENDPOINTS.ASSIGNMENT_PUBLIC_BY_ID}/${id}`);
+                if (response.success) {
+                    const assignmentData = response.assignment;
+                    setAssignment(assignmentData);
+                    
+                    if (assignmentData.questions) {
+                        const initialCodes = {};
+                        assignmentData.questions.forEach((q, idx) => {
+                            initialCodes[idx] = q.starterCode || "";
+                        });
+                        setCodes(initialCodes);
+                    }
+                } else {
+                    navigate('/student-assignments');
                 }
-            ]},
-        ];
-
-        const stored = JSON.parse(localStorage.getItem("gradion_assignments") || "[]");
-        const allAssignments = [...mockData, ...stored];
-        const found = allAssignments.find(a => a.id.toString() === id.toString());
-
-        if (found) {
-            setAssignment(found);
-            if (found.questions) {
-                const initialCodes = {};
-                found.questions.forEach((q, idx) => {
-                    initialCodes[idx] = q.starterCode || "";
-                });
-                setCodes(initialCodes);
+            } catch (error) {
+                console.error('Failed to load assignment:', error);
+                navigate('/student-assignments');
             }
-        } else {
-            navigate('/student-assignments');
-        }
+        };
+
+        loadAssignment();
     }, [id, navigate]);
 
     // Resize Handlers

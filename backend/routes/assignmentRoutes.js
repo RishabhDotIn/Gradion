@@ -7,6 +7,8 @@ const {
 const {
   createAssignment,
   getTeacherAssignments,
+  getPublicAssignments,
+  getPublicAssignmentById,
   getRecentAssignments,
   getAssignmentPerformance,
   getAssignmentById,
@@ -16,6 +18,9 @@ const {
 
 const router = express.Router();
 
+// Public endpoint for student assignments (no authentication required)
+router.get("/public", getPublicAssignments);
+router.get("/public/:id", getPublicAssignmentById);
 router.get("/", auth, roleAuth("teacher"), getTeacherAssignments);
 router.get("/recent", auth, roleAuth("teacher"), getRecentAssignments);
 router.get("/performance", auth, roleAuth("teacher"), getAssignmentPerformance);

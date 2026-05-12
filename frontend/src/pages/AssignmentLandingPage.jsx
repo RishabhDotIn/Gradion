@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { apiCall, API_CONFIG } from '../lib/apiConfig.js';
 import '../styles/assignmentLanding.css';
 
 const AssignmentLandingPage = () => {
@@ -16,34 +17,23 @@ const AssignmentLandingPage = () => {
     }, []);
 
     useEffect(() => {
-        // Mock Data
-        const mockData = [
-            { 
-                id: 1, 
-                title: "Data Structures Midterm Report", 
-                topic: "Data Structures", 
-                difficulty: "Medium", 
-                deadline: "Oct 24, 2026",
-                description: "This assignment covers core data structure concepts including Palindromes, Linked Lists, and Tree Traversal. Complete all questions to submit the final report.",
-                questions: [
-                    { id: 'q1', title: "Longest Palindromic Substring", difficulty: "Medium", points: 50 },
-                    { id: 'q2', title: "Reverse Linked List", difficulty: "Easy", points: 20 },
-                    { id: 'q3', title: "Binary Tree Level Order Traversal", difficulty: "Medium", points: 40 }
-                ]
-            },
-        ];
+        const loadAssignment = async () => {
+            try {
+                const response = await apiCall(`${API_CONFIG.ENDPOINTS.ASSIGNMENT_PUBLIC_BY_ID}/${id}`);
+                if (response.success) {
+                    setAssignment(response.assignment);
+                    const progress = JSON.parse(localStorage.getItem(`gradion_progress_${id}`) || "{}");
+                    setSubmittedQuestions(progress);
+                } else {
+                    navigate('/student-assignments');
+                }
+            } catch (error) {
+                console.error('Failed to load assignment:', error);
+                navigate('/student-assignments');
+            }
+        };
 
-        const stored = JSON.parse(localStorage.getItem("gradion_assignments") || "[]");
-        const allAssignments = [...mockData, ...stored];
-        const found = allAssignments.find(a => a.id.toString() === id.toString());
-
-        if (found) {
-            setAssignment(found);
-            const progress = JSON.parse(localStorage.getItem(`gradion_progress_${id}`) || "{}");
-            setSubmittedQuestions(progress);
-        } else {
-            navigate('/student-assignments');
-        }
+        loadAssignment();
     }, [id, navigate]);
 
     const handleSolve = (qIdx) => {
