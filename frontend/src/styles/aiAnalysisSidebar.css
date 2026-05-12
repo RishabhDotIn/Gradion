@@ -1,4 +1,4 @@
-..ai-sidebar-overlay {
+.ai-sidebar-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -31,7 +31,8 @@
 }
 
 .ai-sidebar-container.resizing {
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Only keep transform transition */
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Only keep transform transition */
 }
 
 .ai-sidebar-container.open {
@@ -240,12 +241,25 @@
   animation: typing 1.4s infinite ease-in-out;
 }
 
-.ai-typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-.ai-typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+.ai-typing-indicator span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.ai-typing-indicator span:nth-child(3) {
+  animation-delay: 0.4s;
+}
 
 @keyframes typing {
-  0%, 80%, 100% { transform: translateY(0); }
-  40% { transform: translateY(-5px); }
+
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+
+  40% {
+    transform: translateY(-5px);
+  }
 }
 
 .ai-input-container {
