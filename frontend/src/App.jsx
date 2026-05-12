@@ -13,6 +13,9 @@ import TeacherViewAssignmentPage from "./pages/TeacherViewAssignmentPage.jsx";
 import StudentSubmissionsPage from "./pages/StudentSubmissionsPage.jsx";
 import StudentViewSubmissionPage from "./pages/StudentViewSubmissionPage.jsx";
 
+import TeacherSubmissionsPage from "./pages/TeacherSubmissionsPage.jsx";
+import TeacherStudentsPage from "./pages/TeacherStudentsPage.jsx";
+
 function App() {
   return (
     <Routes>
@@ -26,6 +29,8 @@ function App() {
       <Route path="/student/submission/:id" element={<StudentViewSubmissionPage />} />
       <Route path="/create-assignment" element={<CreateAssignmentPage />} />
       <Route path="/teacher-assignments" element={<TeacherAssignmentsPage />} />
+      <Route path="/submissions" element={<TeacherSubmissionsPage />} />
+      <Route path="/students" element={<TeacherStudentsPage />} />
       <Route path="/teacher/assignment/view/:id" element={<TeacherViewAssignmentPage />} />
       <Route path="/assignment/:id" element={<AssignmentLandingPage />} />
       <Route path="/assignment/:id/editor/:qIdx" element={<AssignmentEditorPage />} />

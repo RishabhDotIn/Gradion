@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardSidebar from '../components/dashboard/DashboardSidebar.jsx';
 import DashboardHeader from '../components/dashboard/DashboardHeader.jsx';
+import { apiCall, API_CONFIG } from '../lib/apiConfig.js';
 import '../styles/studentAssignments.css';
 
 const StudentAssignmentsPage = () => {
@@ -11,25 +12,8 @@ const StudentAssignmentsPage = () => {
   const [selectedTopic, setSelectedTopic] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const [assignments, setAssignments] = useState(() => {
-    const mockData = [
-      { id: 1, title: "Data Structures Midterm Report", topic: "Data Structures", difficulty: "Medium", questionsCount: 15, deadline: "Oct 24, 2026", status: "Not started", description: "Comprehensive report on trees and graphs implementation." },
-      { id: 2, title: "Algorithms Analytical Essay", topic: "Algorithms", difficulty: "Hard", questionsCount: 5, deadline: "Oct 28, 2026", status: "Not started", description: "An in-depth analysis of sorting algorithms complexity." },
-      { id: 3, title: "Database Weekly Quiz 4", topic: "Database", difficulty: "Medium", questionsCount: 20, deadline: "Oct 22, 2026", status: "Submitted", description: "SQL normalization techniques and query optimization." },
-      { id: 4, title: "Web Dev Project Proposal", topic: "Web Development", difficulty: "Easy", questionsCount: 10, deadline: "Nov 05, 2026", status: "Not started", description: "Initial proposal for the semester-long React application." },
-      { id: 5, title: "OOP Lab Sheets", topic: "Object-Oriented Programming", difficulty: "Hard", questionsCount: 12, deadline: "Oct 20, 2026", status: "Submitted", description: "Detailed observations on inheritance and polymorphism." },
-      { id: 6, title: "Programming Fundamentals Quiz", topic: "Programming Fundamentals", difficulty: "Easy", questionsCount: 25, deadline: "Oct 25, 2026", status: "Not started", description: "Assessment covering loops, variables, and data types." },
-    ];
-
-    const stored = JSON.parse(localStorage.getItem("gradion_assignments") || "[]");
-    const normalized = stored.map(a => ({
-      ...a,
-      questionsCount: a.questions?.length || 0,
-      status: "Not started"
-    }));
-
-    return [...mockData, ...normalized];
-  });
+  const [assignments, setAssignments] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const user = useMemo(() => {
     const userStr = localStorage.getItem("user") || sessionStorage.getItem("user");
@@ -45,12 +29,29 @@ const StudentAssignmentsPage = () => {
   ];
 
   const filteredAssignments = assignments.filter(assignment => {
-    const matchesStatus = filter === 'all' || assignment.status.toLowerCase() === filter;
+    const matchesStatus = filter === 'all' || assignment.status.toLowerCase().replace(' ', '-') === filter;
     const matchesTopic = selectedTopic === 'all' || assignment.topic === selectedTopic;
     const matchesSearch = assignment.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                          assignment.topic.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesStatus && matchesTopic && matchesSearch;
   });
+
+  useEffect(() => {
+    const loadAssignments = async () => {
+      setLoading(true);
+      try {
+        const response = await apiCall(API_CONFIG.ENDPOINTS.ASSIGNMENTS_PUBLIC);
+        setAssignments(response.assignments || []);
+      } catch (error) {
+        console.error('Failed to load assignments:', error);
+        setAssignments([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAssignments();
+  }, []);
 
   return (
     <div className="dashboard-layout">
@@ -123,42 +124,52 @@ const StudentAssignmentsPage = () => {
           </div>
 
           <div className={`assignments-container ${viewMode}`}>
-            {filteredAssignments.map((assignment) => (
-              <div key={assignment.id} className={`assignment-card ${viewMode}`}>
-                <div className="card-top">
-                  <div className="course-info">
-                    <span className="course-name">{assignment.topic}</span>
-                    <span className={`status-label ${assignment.status.toLowerCase().replace(' ', '-')}`}>
-                      {assignment.status}
-                    </span>
-                  </div>
-                  <h3 className="assignment-title">{assignment.title}</h3>
-                  
-                  {viewMode === 'list' && (
-                    <p className="assignment-description">{assignment.description}</p>
-                  )}
-                  
-                  <div className="assignment-meta">
-                    <span className="meta-item"><i className="fas fa-tag"></i> {assignment.topic}</span>
-                    <span className="meta-item"><i className="fas fa-layer-group"></i> {assignment.difficulty}</span>
-                    <span className="meta-item"><i className="fas fa-question-circle"></i> {assignment.questionsCount} Questions</span>
-                  </div>
-                </div>
-                
-                <div className="card-bottom">
-                  <div className="due-date">
-                    <i className="far fa-calendar"></i>
-                    <span>{assignment.deadline}</span>
-                  </div>
-                  <button 
-                    className={`action-btn ${assignment.status === 'Not started' ? 'primary' : 'secondary'}`}
-                    onClick={() => navigate(`/assignment/${assignment.id}`)}
-                  >
-                    {assignment.status === 'Not started' ? 'Start' : 'View Details'}
-                  </button>
-                </div>
+            {loading ? (
+              <div className="loading-state">Loading assignments...</div>
+            ) : filteredAssignments.length === 0 ? (
+              <div className="empty-state">
+                <i className="fas fa-book-open"></i>
+                <h3>No assignments found</h3>
+                <p>Check back later for new assignments.</p>
               </div>
-            ))}
+            ) : (
+              filteredAssignments.map((assignment) => (
+                <div key={assignment.id} className={`assignment-card ${viewMode}`}>
+                  <div className="card-top">
+                    <div className="course-info">
+                      <span className="course-name">{assignment.topic}</span>
+                      <span className={`status-label ${assignment.status.toLowerCase().replace(' ', '-')}`}>
+                        {assignment.status}
+                      </span>
+                    </div>
+                    <h3 className="assignment-title">{assignment.title}</h3>
+                    
+                    {viewMode === 'list' && (
+                      <p className="assignment-description">{assignment.description}</p>
+                    )}
+                    
+                    <div className="assignment-meta">
+                      <span className="meta-item"><i className="fas fa-tag"></i> {assignment.topic}</span>
+                      <span className="meta-item"><i className="fas fa-layer-group"></i> {assignment.difficulty}</span>
+                      <span className="meta-item"><i className="fas fa-question-circle"></i> {assignment.questionsCount} Questions</span>
+                    </div>
+                  </div>
+                  
+                  <div className="card-bottom">
+                    <div className="due-date">
+                      <i className="far fa-calendar"></i>
+                      <span>{assignment.deadline}</span>
+                    </div>
+                    <button 
+                      className={`action-btn ${assignment.status === 'Not started' ? 'primary' : 'secondary'}`}
+                      onClick={() => navigate(`/assignment/${assignment.id}`)}
+                    >
+                      {assignment.status === 'Not started' ? 'Start' : 'View Details'}
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </main>
       </div>

@@ -7,6 +7,8 @@ export const API_CONFIG = {
     REFRESH_TOKEN: "/api/auth/refresh",
     VERIFY: "/api/auth/verify",
     ASSIGNMENTS: "/api/assignments",
+    ASSIGNMENTS_PUBLIC: "/api/assignments/public",
+    ASSIGNMENT_PUBLIC_BY_ID: "/api/assignments/public",
     ASSIGNMENTS_RECENT: "/api/assignments/recent",
     TEACHER_ASSIGNMENTS: "/api/assignments/teacher",
     TEACHER_RECENT: "/api/assignments/teacher/recent",

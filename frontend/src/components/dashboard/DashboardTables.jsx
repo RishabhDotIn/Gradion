@@ -60,7 +60,7 @@ function DashboardTables({ assignments, submissions }) {
             </div>
           ))}
         </div>
-        <div className="table-footer"><button className="btn-view-all-outline" type="button">View All Submissions<i className="fas fa-arrow-right" /></button></div>
+        <div className="table-footer"><button className="btn-view-all-outline" type="button" onClick={() => navigate("/submissions")}>View All Submissions<i className="fas fa-arrow-right" /></button></div>
       </div>
     </div>
   );
