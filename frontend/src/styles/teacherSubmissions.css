@@ -60,18 +60,20 @@
 .submissions-filters-card {
   background: white;
   border-radius: 16px;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
   border: 1px solid #e2e8f0;
   display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  box-shadow: 0 6px 14px -6px rgba(0, 0, 0, 0.08);
 }
 
 .search-wrapper {
   position: relative;
-  width: 100%;
+  flex: 1 1 45%;
+  min-width: 220px;
 }
 
 .search-wrapper i {
@@ -103,7 +105,19 @@
 .filter-group {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  gap: 1rem;
+}
+
+.submissions-filters-card .filter-select {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  min-width: 180px;
+}
+
+.submissions-filters-card .filter-label {
+  display: none; /* compact label hidden on desktop to reduce visual clutter */
 }
 
 .filter-label {
@@ -160,7 +174,7 @@
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  table-layout: fixed; /* Keep column widths stable */
+  table-layout: auto; /* allow the table to adapt on small screens */
 }
 
 .modern-submissions-table th {
@@ -174,16 +188,36 @@
   border-bottom: 1px solid #e2e8f0;
 }
 
-.modern-submissions-table th:nth-child(1) { width: 25%; }
-.modern-submissions-table th:nth-child(2) { width: 25%; }
-.modern-submissions-table th:nth-child(3) { width: 20%; }
-.modern-submissions-table th:nth-child(4) { width: 10%; }
-.modern-submissions-table th:nth-child(5) { width: 10%; }
-.modern-submissions-table th:nth-child(6) { width: 10%; }
+.modern-submissions-table th:nth-child(1) { width: 22%; }
+.modern-submissions-table th:nth-child(2) { width: 18%; }
+.modern-submissions-table th:nth-child(3) { width: 12%; }
+.modern-submissions-table th:nth-child(4) { width: 14%; }
+.modern-submissions-table th:nth-child(5) { width: 8%; }
+.modern-submissions-table th:nth-child(6) { width: 8%; }
+.modern-submissions-table th:nth-child(7) { width: 10%; }
+.modern-submissions-table th:nth-child(8) { width: 8%; }
 
 .modern-submissions-table td {
   padding: 1.25rem 1rem;
   border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+  overflow: hidden;
+}
+
+/* targeted overflow/ellipsis rules so important flex containers keep their layout */
+.student-name-text,
+.student-email-text,
+.assignment-cell span,
+.date-text {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+/* ensure pill elements remain inline-flex and vertically centered */
+.score-badge, .plag-pill, .status-pill, .action-icon-btn {
   vertical-align: middle;
 }
 
@@ -202,17 +236,20 @@
 }
 
 .student-avatar-small {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px; /* circular avatar for a more modern look */
   object-fit: cover;
   border: 2px solid white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 6px 18px rgba(16,24,40,0.06);
 }
+
+.student-avatar-small { flex-shrink: 0; }
 
 .student-details {
   display: flex;
   flex-direction: column;
+  min-width: 0; /* allow children to shrink for ellipsis */
 }
 
 .student-name-text {
@@ -233,11 +270,26 @@
   color: #475569;
   font-weight: 500;
   font-size: 0.9rem;
+  min-width: 0;
+}
+
+.assignment-cell span {
+  display: inline-block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .assignment-cell i {
   color: #6366f1;
   font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
 }
 
 .date-text {
@@ -246,10 +298,17 @@
 }
 
 .score-badge {
-  padding: 0.375rem 0.75rem;
-  border-radius: 8px;
+  padding: 0.35rem 0.75rem;
+  border-radius: 12px;
   font-weight: 700;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 72px; /* allow flexible sizing while keeping alignment */
+  height: 36px;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 2px 6px rgba(16,24,40,0.04);
 }
 
 .score-badge.high {
@@ -273,12 +332,33 @@
   font-size: 0.875rem;
 }
 
-.status-pill {
-  padding: 0.375rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
+/* Plagiarism pill (uses similar sizing) */
+.plag-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  height: 36px;
+  border-radius: 10px;
+  background: #f1f5f9;
+  color: #334155;
   font-weight: 600;
-  display: inline-block;
+  min-width: 56px;
+}
+
+.plag-pill { text-align: center; font-variant-numeric: tabular-nums; }
+
+.status-pill {
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 72px;
+  height: 34px;
+  box-shadow: 0 2px 6px rgba(16,24,40,0.03);
 }
 
 .status-pill.graded {
@@ -296,30 +376,52 @@
   color: #d97706;
 }
 
+.status-pill.failed {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
 .actions-cell {
   display: flex;
   gap: 0.5rem;
+  min-width: 64px;
+  justify-content: center;
 }
 
 .action-icon-btn {
-  width: 38px;
-  height: 38px;
-  min-width: 38px;
-  min-height: 38px;
-  border-radius: 50%;
-  border: none;
-  background: transparent;
-  color: #64748b;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: #fff;
+  color: #475569;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.12s ease-in-out;
   flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(16,24,40,0.04);
+}
+
+.action-icon-btn:hover {
+  transform: translateY(-2px);
+  border-color: #e6eefc;
 }
 
 .action-icon-btn i {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .submissions-filters-card { flex-direction: column; align-items: stretch; gap: 0.75rem; }
+  .search-wrapper { flex: 1 1 100%; }
+  .filter-group { width: 100%; justify-content: space-between; }
+  .modern-submissions-table th, .modern-submissions-table td { padding: 0.85rem 0.75rem; }
+  .student-avatar-small { width: 40px; height: 40px; }
 }
 
 .action-icon-btn:hover {
@@ -359,14 +461,13 @@
 @media (max-width: 1024px) {
   .submissions-filters-card {
     flex-direction: column;
-    align-items: flex-start;
-  }
-  
-  .filter-group {
-    flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 0.75rem;
   }
+
+  .submissions-filters-card .filter-label { display: inline-block; }
+  .search-wrapper { flex: unset; width: 100%; }
+  .submissions-filters-card .filter-select { width: 100%; }
 }
 /* Compact Modal Styles */
 .modal-overlay {

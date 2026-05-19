@@ -1,8 +1,19 @@
-import React from 'react';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import React, { useMemo } from 'react';
+import { BarChart, Bar, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from 'recharts';
 import '../../styles/performanceCard.css';
 
-const TeacherPerformanceCard = ({ data = [], improvement = 0, loading = false }) => {
+const TeacherPerformanceCard = ({ data = [], loading = false, dashboardTotals = {} }) => {
+  const snapshot = useMemo(() => {
+    const values = data
+      .filter((item) => item && !item.empty && item.score != null)
+      .map((item) => Number(item.score || 0))
+      .filter((value) => Number.isFinite(value));
+    const average = values.length ? Math.round(values.reduce((sum, value) => sum + value, 0) / values.length) : 0;
+    const latest = values.length ? values[values.length - 1] : 0;
+    const peak = values.length ? Math.max(...values) : 0;
+
+    return { average, latest, peak };
+  }, [data]);
 
   if (loading) {
     return (
@@ -14,71 +25,65 @@ const TeacherPerformanceCard = ({ data = [], improvement = 0, loading = false })
   }
 
   return (
-    <div className="performance-card compact">
-      <div className="performance-header">
-        <h3 className="performance-title">Performance</h3>
+    <div className="performance-card compact snapshot-card">
+      <div className="performance-header performance-header-row">
+        <div>
+          <h3 className="performance-title">Class average marks</h3>
+          <p className="performance-subtitle">Monthly average scores from graded submissions</p>
+        </div>
+        <div className="performance-header-stats">
+          <div className="performance-stat-pill performance-stat-pill-header">
+            <span className="pill-label">Total students</span>
+            <strong>{dashboardTotals.totalStudents ?? 0}</strong>
+          </div>
+          <div className="performance-stat-pill performance-stat-pill-header">
+            <span className="pill-label">Total submissions</span>
+            <strong>{dashboardTotals.totalSubmissions ?? 0}</strong>
+          </div>
+          <div className="performance-stat-pill performance-stat-pill-header">
+            <span className="pill-label">Total assignments</span>
+            <strong>{dashboardTotals.totalAssignments ?? 0}</strong>
+          </div>
+        </div>
       </div>
-      
+
       <div className="performance-chart-container">
-        <ResponsiveContainer width="100%" height={140}>
-          <AreaChart data={data} margin={{ top: 10, right: 25, left: 25, bottom: 0 }}>
-            <defs>
-              <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#6C63FF" stopOpacity={0.1}/>
-                <stop offset="95%" stopColor="#6C63FF" stopOpacity={0}/>
-              </linearGradient>
-            </defs>
+        <ResponsiveContainer width="100%" height={180}>
+          <BarChart data={data} margin={{ top: 12, right: 12, left: 0, bottom: 0 }} barCategoryGap="24%" barSize={26}>
             <XAxis 
-              dataKey="shortName" 
+              dataKey="shortName"
               axisLine={false} 
               tickLine={false} 
-              tick={{ fill: '#94a3b8', fontSize: 12 }}
+              tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }}
               dy={10}
               interval={0}
-              padding={{ left: 10, right: 10 }}
+              padding={{ left: 8, right: 8 }}
+              tickFormatter={(value) => (String(value).length > 14 ? `${String(value).slice(0, 13)}…` : value)}
             />
-            <YAxis hide domain={[0, 'dataMax + 10']} />
+            <YAxis hide domain={[0, 'dataMax + 5']} />
+            <CartesianGrid vertical={false} stroke="rgba(148, 163, 184, 0.12)" strokeDasharray="4 8" />
+            <ReferenceLine y={snapshot.average} stroke="rgba(99, 102, 241, 0.35)" strokeDasharray="6 6" />
             <Tooltip 
               contentStyle={{ 
-                borderRadius: '10px', 
-                border: 'none', 
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                borderRadius: '14px', 
+                border: '1px solid rgba(226, 232, 240, 0.9)', 
+                boxShadow: '0 14px 30px rgba(15,23,42,0.12)',
+                background: 'rgba(255,255,255,0.96)',
                 fontSize: '12px'
               }}
-              cursor={{ stroke: '#6C63FF', strokeWidth: 1, strokeDasharray: '5 5' }}
-              formatter={(value) => [`${value} Assignments`, 'Created']}
-              labelFormatter={(label) => `Month: ${label}`}
+              cursor={{ fill: 'rgba(99, 102, 241, 0.06)' }}
+              formatter={(value) => [`${value}%`, 'Average marks']}
+              labelFormatter={(label) => `Assignment: ${label}`}
             />
-            <Area 
-              type="monotone" 
-              dataKey="trend" 
-              stroke="#C7C4FF" 
-              strokeWidth={2}
-              fill="transparent" 
-              dot={false}
-              activeDot={false}
-            />
-            <Area 
-              type="monotone" 
-              dataKey="score" 
-              stroke="#6C63FF" 
-              strokeWidth={3}
-              fillOpacity={1} 
-              fill="url(#colorScore)" 
-              dot={{ r: 4, fill: '#6C63FF', strokeWidth: 2, stroke: '#fff' }}
-              activeDot={{ r: 6, fill: '#6C63FF', strokeWidth: 2, stroke: '#fff' }}
-            />
-          </AreaChart>
+            <Bar dataKey="score" radius={[14, 14, 6, 6]}>
+              {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.empty ? 'transparent' : entry.attempted === false ? '#ef4444' : '#5b5ff6'} />
+              ))}
+            </Bar>
+          </BarChart>
         </ResponsiveContainer>
       </div>
 
-      <div className="performance-footer">
-        <div className="improvement-value">{improvement > 0 ? `+${improvement}%` : `${improvement}%`}</div>
-        <div className="improvement-text">
-          Assignment creation {improvement >= 0 ? 'increased' : 'decreased'} by {Math.abs(improvement)}%<br />
-          compared to last month
-        </div>
-      </div>
     </div>
   );
 };

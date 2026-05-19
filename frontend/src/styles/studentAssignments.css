@@ -230,6 +230,11 @@
     color: #b91c1c;
 }
 
+.status-label.open {
+    background: #f0fdf4;
+    color: #15803d;
+}
+
 .assignment-title {
     font-size: 18px;
     font-weight: 700;
@@ -292,6 +297,14 @@
 .due-date i {
     color: #6C63FF;
     font-size: 16px;
+}
+
+.due-date.closed {
+    color: #b91c1c;
+}
+
+.due-date.closed i {
+    color: #b91c1c;
 }
 
 .assignment-card.list .card-bottom {

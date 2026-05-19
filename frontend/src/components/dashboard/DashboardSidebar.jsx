@@ -1,25 +1,45 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth.js";
+import { getSessionRole } from "../../lib/authSession.js";
+import { STUDENT_MENU_ITEMS } from "../../nav/studentMenu.js";
+
+const teacherDefaultItems = [
+  { path: "/teacher-dashboard", icon: "fas fa-th-large", label: "Dashboard" },
+  { path: "/create-assignment", icon: "fas fa-plus-circle", label: "Create Assignment" },
+  { path: "/teacher-assignments", icon: "fas fa-book-open", label: "Assignments" },
+  { path: "/submissions", icon: "fas fa-file-alt", label: "Submissions" },
+  { path: "/students", icon: "fas fa-users", label: "Manage Classes" },
+  { path: "/reports", icon: "fas fa-chart-bar", label: "Reports" },
+];
+
+const studentDefaultItems = STUDENT_MENU_ITEMS;
 
 function DashboardSidebar({ menuItems }) {
   const location = useLocation();
   const { user } = useAuth();
+  const role = user?.role || getSessionRole();
 
-  const defaultItems = [
-    { path: "/teacher-dashboard", icon: "fas fa-th-large", label: "Dashboard" },
-    { path: "/create-assignment", icon: "fas fa-plus-circle", label: "Create Assignment" },
-    { path: "/teacher-assignments", icon: "fas fa-book-open", label: "Assignments" },
-    { path: "/submissions", icon: "fas fa-file-alt", label: "Submissions" },
-    { path: "/students", icon: "fas fa-users", label: "Students" },
-    { path: "/reports", icon: "fas fa-chart-bar", label: "Reports" },
-  ];
+  /** Only explicit teacher sees teacher nav; missing role must not default to teacher (student UX bug). */
+  const fallback = role === "teacher" ? teacherDefaultItems : studentDefaultItems;
+  const items = menuItems || fallback;
 
-  const items = menuItems || defaultItems;
+  const linkActive = (path) => {
+    if (location.pathname === path) return true;
+    if (path === "/student-dashboard" || path === "/teacher-dashboard") return false;
+    return location.pathname.startsWith(`${path}/`);
+  };
 
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
-        <Link to={user?.role === 'teacher' ? '/teacher-dashboard' : user?.role === 'student' ? '/student-dashboard' : '/'} className="sidebar-logo">
+        <Link
+          to={
+            (user?.role || getSessionRole()) === "teacher"
+              ? "/teacher-dashboard"
+              : "/student-dashboard"
+          }
+          className="sidebar-logo"
+        >
           <div className="logo-icon"><i className="fas fa-graduation-cap" /></div>
           <span className="logo-text">Gradion</span>
         </Link>
@@ -29,7 +49,7 @@ function DashboardSidebar({ menuItems }) {
           <Link
             key={index}
             to={item.path}
-            className={`sidebar-link ${location.pathname === item.path ? "active" : ""}`}
+            className={`sidebar-link ${linkActive(item.path) ? "active" : ""}`}
           >
             <i className={item.icon} />
             <span>{item.label}</span>

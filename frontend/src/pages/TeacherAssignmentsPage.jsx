@@ -8,8 +8,9 @@ import '../styles/studentAssignments.css';
 const TeacherAssignmentsPage = () => {
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
-  const [filter, setFilter] = useState('all'); // 'all', 'published', 'closed'
+  const [filter, setFilter] = useState('open'); // 'all', 'open', 'closed' (default open)
   const [selectedTopic, setSelectedTopic] = useState('all');
+  const [selectedClass, setSelectedClass] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   const [assignments, setAssignments] = useState([]);
@@ -30,24 +31,56 @@ const TeacherAssignmentsPage = () => {
     { path: "/reports", icon: "fas fa-chart-bar", label: "Reports" },
   ];
 
-  const filteredAssignments = assignments.filter(assignment => {
-    const matchesStatus = filter === 'all' || assignment.status.toLowerCase() === filter;
-    const matchesTopic = selectedTopic === 'all' || assignment.topic === selectedTopic;
-    const matchesSearch = assignment.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         assignment.topic.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesStatus && matchesTopic && matchesSearch;
+  const classOptions = useMemo(() => {
+    const m = new Map();
+    assignments.forEach((a) => {
+      const c = a.classId;
+      if (c && typeof c === "object" && c._id) m.set(String(c._id), c.name || "Class");
+    });
+    return [...m.entries()];
+  }, [assignments]);
+
+  const filteredAssignments = assignments.filter((assignment) => {
+    const statusForFilter = (assignment.rawStatus || assignment.status || '').toLowerCase();
+    const matchesStatus = filter === "all" || statusForFilter === filter;
+    const matchesTopic = selectedTopic === "all" || assignment.topic === selectedTopic;
+    const cid = assignment.classId && typeof assignment.classId === "object" ? assignment.classId._id : assignment.classId;
+    const matchesClass = selectedClass === "all" || String(cid) === selectedClass;
+    const matchesSearch =
+      assignment.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      assignment.topic.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesStatus && matchesTopic && matchesClass && matchesSearch;
   });
 
   useEffect(() => {
     const loadAssignments = async () => {
       setLoading(true);
       try {
-        const response = await apiCall(API_CONFIG.ENDPOINTS.ASSIGNMENTS);
-        const normalized = (response.assignments || []).map((assignment) => ({
-          ...assignment,
-          questionsCount: assignment.questions?.length || 0,
-          status: assignment.status ? assignment.status.charAt(0).toUpperCase() + assignment.status.slice(1) : "Published",
-        }));
+        const response = await apiCall(API_CONFIG.ENDPOINTS.TEACHER_ASSIGNMENTS);
+        const normalized = (response.assignments || []).map((assignment) => {
+          const originalDeadline = assignment.deadline ? new Date(assignment.deadline) : null;
+          const now = new Date();
+          const expired = originalDeadline ? (originalDeadline < now) : false;
+          let raw = assignment.status ? assignment.status.toLowerCase() : 'published';
+          // if deadline passed, treat as closed regardless of published flag
+          if (expired) raw = 'closed';
+          // map backend 'published' to 'open' for filtering and CSS
+          const rawForFilter = raw === 'published' ? 'open' : raw;
+          // display 'Open' for published to match student view
+          const displayStatus = raw === 'published' ? 'Open' : (raw.charAt(0).toUpperCase() + raw.slice(1));
+          const statusClass = raw === 'published' ? 'open' : raw;
+          return {
+            ...assignment,
+            questionsCount: assignment.questions?.length || 0,
+            rawStatus: rawForFilter,
+            status: displayStatus,
+            statusClass,
+            attemptedCount: assignment.attemptedCount || 0,
+            classStudentCount: assignment.classStudentCount || 0,
+            deadlineRaw: originalDeadline,
+            deadline: originalDeadline ? originalDeadline.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '',
+          };
+        });
         setAssignments(normalized);
       } catch {
         setAssignments([]);
@@ -83,18 +116,31 @@ const TeacherAssignmentsPage = () => {
                 />
               </div>
 
+              <select
+                className="filter-select"
+                value={selectedClass}
+                onChange={(e) => setSelectedClass(e.target.value)}
+              >
+                <option value="all">All classes</option>
+                {classOptions.map(([cid, name]) => (
+                  <option key={cid} value={cid}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+
               <select 
                 className="filter-select"
                 value={selectedTopic}
                 onChange={(e) => setSelectedTopic(e.target.value)}
               >
-                <option value="all">All Courses</option>
-                <option value="Programming Fundamentals">Programming Fundamentals</option>
-                <option value="Data Structures">Data Structures</option>
-                <option value="Algorithms">Algorithms</option>
-                <option value="Web Development">Web Development</option>
-                <option value="Database">Database</option>
-                <option value="Object-Oriented Programming">Object-Oriented Programming</option>
+                <option value="all">All topics</option>
+                <option value="programming-fundamentals">Programming Fundamentals</option>
+                <option value="data-structures">Data Structures</option>
+                <option value="algorithms">Algorithms</option>
+                <option value="web-development">Web Development</option>
+                <option value="database">Database</option>
+                <option value="oop">Object-Oriented Programming</option>
               </select>
               
               <select 
@@ -103,7 +149,7 @@ const TeacherAssignmentsPage = () => {
                 onChange={(e) => setFilter(e.target.value)}
               >
                 <option value="all">All Status</option>
-                <option value="published">Published</option>
+                <option value="open">Open</option>
                 <option value="closed">Closed</option>
               </select>
             </div>
@@ -134,8 +180,8 @@ const TeacherAssignmentsPage = () => {
               <div key={assignment._id} className={`assignment-card ${viewMode}`}>
                 <div className="card-top">
                   <div className="course-info">
-                    <span className="course-name">{assignment.topic}</span>
-                    <span className={`status-label ${assignment.status.toLowerCase()}`}>
+                    <span className="course-name">{assignment.classId?.name || assignment.topic}</span>
+                    <span className={`status-label ${assignment.statusClass || assignment.status.toLowerCase()}`}>
                       {assignment.status}
                     </span>
                   </div>
@@ -146,14 +192,20 @@ const TeacherAssignmentsPage = () => {
                   )}
                   
                   <div className="assignment-meta">
+                    {assignment.classId?.name ? (
+                      <span className="meta-item"><i className="fas fa-chalkboard"></i> {assignment.classId.name}</span>
+                    ) : null}
                     <span className="meta-item"><i className="fas fa-tag"></i> {assignment.topic}</span>
                     <span className="meta-item"><i className="fas fa-layer-group"></i> {assignment.difficulty}</span>
                     <span className="meta-item"><i className="fas fa-question-circle"></i> {assignment.questionsCount} Questions</span>
+                    {assignment.classStudentCount > 0 && (
+                      <span className="meta-item"><i className="fas fa-users"></i> {assignment.attemptedCount} / {assignment.classStudentCount} attempted</span>
+                    )}
                   </div>
                 </div>
                 
-                <div className="card-bottom">
-                  <div className="due-date">
+                  <div className="card-bottom">
+                  <div className={`due-date ${assignment.statusClass === 'closed' ? 'closed' : ''}`}>
                     <i className="far fa-calendar"></i>
                     <span>{assignment.deadline}</span>
                   </div>

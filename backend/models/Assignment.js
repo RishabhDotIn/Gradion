@@ -49,11 +49,13 @@ const assignmentSchema = new mongoose.Schema(
       type: Date,
       required: [true, "Deadline is required"],
       validate: {
-        validator: function(value) {
+        validator: function (value) {
+          if (!value) return false;
+          if (!this.isNew) return true;
           return value > new Date();
         },
-        message: "Deadline must be in the future"
-      }
+        message: "Deadline must be in the future when creating an assignment",
+      },
     },
     questions: {
       type: [questionSchema],
@@ -67,6 +69,12 @@ const assignmentSchema = new mongoose.Schema(
     teacher: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      required: true,
+      index: true,
+    },
+    classId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Class',
       required: true,
       index: true,
     },

@@ -2,7 +2,8 @@ const express = require("express");
 const { auth, roleAuth } = require("../middleware/authMiddleware");
 
 const {
-  assignmentValidations,
+  assignmentCreateValidations,
+  assignmentUpdateValidations,
   validateAssignmentRequest,
 } = require("../middleware/assignmentMiddleware");
 
@@ -59,7 +60,7 @@ router.post(
   "/teacher",
   auth,
   roleAuth("teacher"),
-  assignmentValidations,
+  assignmentCreateValidations,
   validateAssignmentRequest,
   createAssignment
 );
@@ -68,7 +69,7 @@ router.put(
   "/teacher/:id",
   auth,
   roleAuth("teacher"),
-  assignmentValidations,
+  assignmentUpdateValidations,
   validateAssignmentRequest,
   updateAssignment
 );

@@ -1,5 +1,7 @@
 .assignment-landing-container {
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
     background: var(--bg-primary);
     color: var(--text-primary);
     padding: 0;
@@ -130,7 +132,9 @@
 }
 
 .landing-content {
+    flex: 1;
     max-width: 800px;
+    width: 100%;
     margin: 24px auto;
     padding: 0 16px 40px;
 }
@@ -312,4 +316,155 @@
 .submit-assignment-final-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 18px rgba(59, 130, 246, 0.3);
+}
+
+/* —— Loading state (assignment hub before content) —— */
+.assignment-loading-nav-title {
+    font-style: italic;
+    opacity: 0.85;
+}
+
+.assignment-loading-main {
+    flex: 1;
+    min-height: calc(100vh - 48px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 20px 48px;
+    background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59, 130, 246, 0.12), transparent 55%),
+        var(--bg-primary);
+}
+
+.assignment-landing-container.dark-theme .assignment-loading-main {
+    background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(255, 161, 22, 0.08), transparent 55%),
+        var(--bg-primary);
+}
+
+.assignment-loading-card {
+    width: 100%;
+    max-width: 440px;
+    text-align: center;
+    padding: 40px 36px 36px;
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(15, 23, 42, 0.08);
+}
+
+.assignment-landing-container.dark-theme .assignment-loading-card {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+.assignment-loading-spinner {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    border: 3px solid var(--border-color);
+    border-top-color: var(--accent);
+    animation: assignment-spin 0.75s linear infinite;
+}
+
+@keyframes assignment-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.assignment-loading-heading {
+    margin: 0 0 8px;
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+}
+
+.assignment-loading-sub {
+    margin: 0 0 28px;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: var(--text-secondary);
+}
+
+.assignment-loading-skeleton {
+    text-align: left;
+    padding-top: 8px;
+}
+
+.sk-line {
+    height: 10px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    background: var(--bg-secondary);
+    position: relative;
+    overflow: hidden;
+}
+
+.sk-line::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+    animation: assignment-shimmer 1.35s ease-in-out infinite;
+}
+
+.assignment-landing-container.dark-theme .sk-line::after {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+}
+
+.sk-line--long {
+    width: 100%;
+}
+
+.sk-line--med {
+    width: 78%;
+}
+
+.sk-line--short {
+    width: 52%;
+    margin-bottom: 20px;
+}
+
+.sk-blocks {
+    display: flex;
+    gap: 10px;
+}
+
+.sk-block {
+    flex: 1;
+    height: 56px;
+    border-radius: 10px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.sk-block::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+    animation: assignment-shimmer 1.35s ease-in-out infinite;
+}
+
+.assignment-landing-container.dark-theme .sk-block::after {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+}
+
+.sk-blocks .sk-block:nth-child(2)::after {
+    animation-delay: 0.15s;
+}
+
+.sk-blocks .sk-block:nth-child(3)::after {
+    animation-delay: 0.3s;
+}
+
+@keyframes assignment-shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
 }

@@ -3,13 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import DashboardSidebar from '../components/dashboard/DashboardSidebar.jsx';
 import DashboardHeader from '../components/dashboard/DashboardHeader.jsx';
 import { apiCall, API_CONFIG } from '../lib/apiConfig.js';
+import { STUDENT_MENU_ITEMS } from '../nav/studentMenu.js';
 import '../styles/studentAssignments.css';
 
 const StudentAssignmentsPage = () => {
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
-  const [filter, setFilter] = useState('all'); // 'all', 'not started', 'submitted'
+  const [filter, setFilter] = useState('open'); // default open
   const [selectedTopic, setSelectedTopic] = useState('all');
+  const [selectedClass, setSelectedClass] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   const [assignments, setAssignments] = useState([]);
@@ -21,29 +23,52 @@ const StudentAssignmentsPage = () => {
     try { return JSON.parse(userStr); } catch { return null; }
   }, []);
 
-  const studentMenuItems = [
-    { path: "/student-dashboard", icon: "fas fa-th-large", label: "Dashboard" },
-    { path: "/student-assignments", icon: "fas fa-book-open", label: "Assignments" },
-    { path: "/my-submissions", icon: "fas fa-upload", label: "My Submissions" },
-    { path: "/performance", icon: "fas fa-chart-line", label: "Performance" },
-  ];
+  const studentMenuItems = STUDENT_MENU_ITEMS;
 
-  const filteredAssignments = assignments.filter(assignment => {
-    const matchesStatus = filter === 'all' || assignment.status.toLowerCase().replace(' ', '-') === filter;
-    const matchesTopic = selectedTopic === 'all' || assignment.topic === selectedTopic;
-    const matchesSearch = assignment.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         assignment.topic.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesStatus && matchesTopic && matchesSearch;
+  const classOptions = useMemo(() => {
+    const m = new Map();
+    assignments.forEach((a) => {
+      const c = a.classId;
+      if (c && typeof c === "object" && c._id) m.set(String(c._id), c.name || "Class");
+    });
+    return [...m.entries()];
+  }, [assignments]);
+
+  const filteredAssignments = assignments.filter((assignment) => {
+    const open = assignment.statusLabel === "Open";
+    const matchesStatus =
+      filter === "all" || (filter === "open" && open) || (filter === "closed" && !open);
+    const matchesTopic = selectedTopic === "all" || assignment.topic === selectedTopic;
+    const cid = assignment.classId && typeof assignment.classId === "object" ? assignment.classId._id : assignment.classId;
+    const matchesClass = selectedClass === "all" || String(cid) === selectedClass;
+    const matchesSearch =
+      assignment.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      assignment.topic.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesStatus && matchesTopic && matchesClass && matchesSearch;
   });
 
   useEffect(() => {
     const loadAssignments = async () => {
       setLoading(true);
       try {
-        const response = await apiCall(API_CONFIG.ENDPOINTS.ASSIGNMENTS_PUBLIC);
-        setAssignments(response.assignments || []);
+        const response = await apiCall(`${API_CONFIG.ENDPOINTS.ASSIGNMENTS_STUDENT}?limit=50`);
+        const raw = response.assignments || [];
+        const normalized = raw.map((a) => {
+          const deadline = a.deadline ? new Date(a.deadline) : null;
+          const open = deadline && deadline > new Date();
+          return {
+            ...a,
+            id: a._id,
+            questionsCount: a.questions?.length || 0,
+            deadline: deadline ? deadline.toLocaleDateString() : "",
+            status: open ? "Not started" : "Closed",
+            statusLabel: open ? "Open" : "Closed",
+            difficulty: a.difficulty ? a.difficulty.charAt(0).toUpperCase() + a.difficulty.slice(1) : "",
+          };
+        });
+        setAssignments(normalized);
       } catch (error) {
-        console.error('Failed to load assignments:', error);
+        console.error("Failed to load assignments:", error);
         setAssignments([]);
       } finally {
         setLoading(false);
@@ -77,18 +102,31 @@ const StudentAssignmentsPage = () => {
                 />
               </div>
 
+              <select
+                className="filter-select"
+                value={selectedClass}
+                onChange={(e) => setSelectedClass(e.target.value)}
+              >
+                <option value="all">All classes</option>
+                {classOptions.map(([cid, name]) => (
+                  <option key={cid} value={cid}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+
               <select 
                 className="filter-select"
                 value={selectedTopic}
                 onChange={(e) => setSelectedTopic(e.target.value)}
               >
-                <option value="all">All Courses</option>
-                <option value="Programming Fundamentals">Programming Fundamentals</option>
-                <option value="Data Structures">Data Structures</option>
-                <option value="Algorithms">Algorithms</option>
-                <option value="Web Development">Web Development</option>
-                <option value="Database">Database</option>
-                <option value="Object-Oriented Programming">Object-Oriented Programming</option>
+                <option value="all">All topics</option>
+                <option value="programming-fundamentals">Programming Fundamentals</option>
+                <option value="data-structures">Data Structures</option>
+                <option value="algorithms">Algorithms</option>
+                <option value="web-development">Web Development</option>
+                <option value="database">Database</option>
+                <option value="oop">Object-Oriented Programming</option>
               </select>
               
               <select 
@@ -96,9 +134,9 @@ const StudentAssignmentsPage = () => {
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
               >
-                <option value="all">All Status</option>
-                <option value="not started">Not Started</option>
-                <option value="submitted">Submitted</option>
+                <option value="all">All</option>
+                <option value="open">Open</option>
+                <option value="closed">Past deadline</option>
               </select>
             </div>
           </header>
@@ -134,12 +172,12 @@ const StudentAssignmentsPage = () => {
               </div>
             ) : (
               filteredAssignments.map((assignment) => (
-                <div key={assignment.id} className={`assignment-card ${viewMode}`}>
+                <div key={assignment.id || assignment._id} className={`assignment-card ${viewMode}`}>
                   <div className="card-top">
                     <div className="course-info">
-                      <span className="course-name">{assignment.topic}</span>
-                      <span className={`status-label ${assignment.status.toLowerCase().replace(' ', '-')}`}>
-                        {assignment.status}
+                      <span className="course-name">{assignment.classId?.name || assignment.topic}</span>
+                      <span className={`status-label ${(assignment.statusLabel || assignment.status || "").toLowerCase().replace(" ", "-")}`}>
+                        {assignment.statusLabel || assignment.status}
                       </span>
                     </div>
                     <h3 className="assignment-title">{assignment.title}</h3>
@@ -149,24 +187,40 @@ const StudentAssignmentsPage = () => {
                     )}
                     
                     <div className="assignment-meta">
+                      {assignment.classId?.name ? (
+                        <span className="meta-item"><i className="fas fa-chalkboard"></i> {assignment.classId.name}</span>
+                      ) : null}
                       <span className="meta-item"><i className="fas fa-tag"></i> {assignment.topic}</span>
                       <span className="meta-item"><i className="fas fa-layer-group"></i> {assignment.difficulty}</span>
                       <span className="meta-item"><i className="fas fa-question-circle"></i> {assignment.questionsCount} Questions</span>
                     </div>
                   </div>
                   
-                  <div className="card-bottom">
-                    <div className="due-date">
-                      <i className="far fa-calendar"></i>
-                      <span>{assignment.deadline}</span>
-                    </div>
-                    <button 
-                      className={`action-btn ${assignment.status === 'Not started' ? 'primary' : 'secondary'}`}
-                      onClick={() => navigate(`/assignment/${assignment.id}`)}
-                    >
-                      {assignment.status === 'Not started' ? 'Start' : 'View Details'}
-                    </button>
-                  </div>
+                      <div className="card-bottom">
+                        <div className="due-date">
+                          <i className="far fa-calendar"></i>
+                          <span>{assignment.deadline}</span>
+                        </div>
+                        {assignment.hasSubmission ? (
+                          <button
+                            className={`action-btn secondary`}
+                            onClick={() => {
+                              const sid = assignment.submission?.submissionId || assignment.submission?._id || null;
+                              if (sid) navigate(`/student/submission/${sid}`);
+                              else navigate(`/assignment/${assignment.id || assignment._id}`);
+                            }}
+                          >
+                            View Submission
+                          </button>
+                        ) : (
+                          <button 
+                            className={`action-btn ${assignment.status === 'Not started' || assignment.status === 'Open' ? 'primary' : 'secondary'}`}
+                            onClick={() => navigate(`/assignment/${assignment.id || assignment._id}`)}
+                          >
+                            {assignment.status === 'Not started' || assignment.status === 'Open' ? 'Start' : 'View Details'}
+                          </button>
+                        )}
+                      </div>
                 </div>
               ))
             )}

@@ -14,18 +14,22 @@ const {
 const { requestLogger, logger } = require('./utils/logger');
 const authRoutes = require('./routes/authRoutes');
 const assignmentRoutes = require('./routes/assignmentRoutes');
-const {
-  studentDashboard,
-  teacherDashboard,
-  performance,
-  dashboardStats,
-} = require('./controllers/authController');
+const aiRoutes = require('./routes/aiRoutes');
+const classRoutes = require('./routes/classRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
+const submissionRoutes = require('./routes/submissionRoutes');
+const { performance, dashboardStats } = require('./controllers/authController');
 
-// Load environment variables
-dotenv.config();
+// Load environment variables from backend/.env (works even if process cwd is repo root)
+dotenv.config({ path: require('path').join(__dirname, '.env') });
 
 // Initialize Express app
 const app = express();
+
+// When behind nginx / Render / Railway, set TRUST_PROXY=1 so req.ip is the client (rate limits work per user).
+if (process.env.TRUST_PROXY === '1' || process.env.TRUST_PROXY === 'true') {
+  app.set('trust proxy', 1);
+}
 
 // Request logging middleware
 app.use(requestLogger);
@@ -39,11 +43,25 @@ app.use(xssProtection);
 app.use(generalLimiter);
 
 // CORS configuration
-app.use(cors({ 
-  origin: ['http://localhost:3000', 'http://localhost:5173'],
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:5173',
+];
+
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    if (process.env.NODE_ENV !== 'production' && /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) {
+      return callback(null, true);
+    }
+    return callback(null, false);
+  },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 // Body parsing middleware
@@ -56,6 +74,10 @@ connectDB();
 // Routes with specific rate limiting
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/assignments', assignmentRoutes);
+app.use('/api/ai', aiRoutes);
+app.use('/api/classes', classRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/submissions', submissionRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -67,9 +89,6 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Protected routes examples
-app.get('/api/dashboard/student', auth, roleAuth('student'), studentDashboard);
-app.get('/api/dashboard/teacher', auth, roleAuth('teacher'), teacherDashboard);
 app.get('/api/performance', auth, performance);
 app.get('/api/dashboard/stats', auth, roleAuth('teacher'), dashboardStats);
 

@@ -50,8 +50,10 @@ body {
     justify-content: space-between;
     padding: 0 48px;
     height: 64px;
-    background: var(--bg-light);
-    border-bottom: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.72);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.7);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
     position: sticky;
     top: 0;
     z-index: 100;
@@ -250,6 +252,124 @@ body {
     padding: 32px 80px;
     max-width: 1400px;
     margin: 0 auto;
+}
+
+.teacher-dashboard-glass .sidebar,
+.teacher-dashboard-glass .dashboard-content,
+.teacher-dashboard-glass .page-header,
+.teacher-dashboard-glass .security-banner,
+.teacher-dashboard-glass .dashboard-stat-card,
+.teacher-dashboard-glass .assignment-card,
+.teacher-dashboard-glass .submissions-section,
+.teacher-dashboard-glass .profile-card,
+.teacher-dashboard-glass .performance-card,
+.teacher-dashboard-glass .teacher-performance-card,
+.teacher-dashboard-glass .tables-grid > * {
+    background: rgba(255, 255, 255, 0.68);
+    border: 1px solid rgba(255, 255, 255, 0.62);
+    box-shadow: 0 18px 45px rgba(59, 130, 246, 0.08), 0 1px 0 rgba(255, 255, 255, 0.55) inset;
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+}
+
+.teacher-dashboard-glass .sidebar {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.58));
+    border-right: 1px solid rgba(255, 255, 255, 0.55);
+}
+
+.teacher-dashboard-glass .dashboard-main {
+    background: transparent;
+}
+
+.teacher-dashboard-glass .dashboard-content {
+    border-radius: 28px;
+    padding: 28px;
+    background: rgba(255, 255, 255, 0.28);
+    box-shadow: 0 22px 55px rgba(15, 23, 42, 0.08);
+}
+
+.teacher-dashboard-glass .page-header,
+.teacher-dashboard-glass .security-banner,
+.teacher-dashboard-glass .dashboard-grid-content,
+.teacher-dashboard-glass .tables-grid {
+    border-radius: 24px;
+}
+
+.teacher-dashboard-glass .dashboard-stat-card,
+.teacher-dashboard-glass .assignment-card,
+.teacher-dashboard-glass .submissions-section,
+.teacher-dashboard-glass .profile-card,
+.teacher-dashboard-glass .teacher-performance-card,
+.teacher-dashboard-glass .performance-card {
+    border-radius: 24px;
+}
+
+.teacher-dashboard-glass .dashboard-stat-card:hover,
+.teacher-dashboard-glass .assignment-card:hover,
+.teacher-dashboard-glass .submissions-section:hover,
+.teacher-dashboard-glass .profile-card:hover,
+.teacher-dashboard-glass .teacher-performance-card:hover,
+.teacher-dashboard-glass .performance-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 22px 50px rgba(59, 130, 246, 0.14);
+}
+
+.teacher-dashboard-glass .page-title,
+.teacher-dashboard-glass .content-title,
+.teacher-dashboard-glass .section-title,
+.teacher-dashboard-glass .table-title,
+.teacher-dashboard-glass .stat-value,
+.teacher-dashboard-glass .card-title,
+.teacher-dashboard-glass .submission-student {
+    letter-spacing: -0.02em;
+}
+
+.teacher-dashboard-glass .btn-create,
+.teacher-dashboard-glass .btn-primary,
+.teacher-dashboard-glass .btn-view-all,
+.teacher-dashboard-glass .btn-view-all-outline,
+.teacher-dashboard-glass .btn-filter,
+.teacher-dashboard-glass .view-all-btn,
+.teacher-dashboard-glass .table-action-btn,
+.teacher-dashboard-glass .action-btn,
+.teacher-dashboard-glass .sidebar-link.active {
+    box-shadow: 0 10px 24px rgba(99, 102, 241, 0.18);
+}
+
+.teacher-dashboard-glass .dashboard-stats,
+.teacher-dashboard-glass .tables-grid,
+.teacher-dashboard-glass .dashboard-grid-content {
+    gap: 22px;
+}
+
+.teacher-dashboard-glass .stat-card,
+.teacher-dashboard-glass .dashboard-stat-card,
+.teacher-dashboard-glass .assignment-card,
+.teacher-dashboard-glass .submissions-section,
+.teacher-dashboard-glass .profile-card,
+.teacher-dashboard-glass .teacher-performance-card,
+.teacher-dashboard-glass .performance-card {
+    border: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+.teacher-dashboard-glass .submission-item:hover,
+.teacher-dashboard-glass .assignments-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.teacher-dashboard-glass .assignments-table,
+.teacher-dashboard-glass .modern-submissions-table {
+    background: transparent;
+}
+
+.teacher-dashboard-glass .assignments-table th,
+.teacher-dashboard-glass .modern-submissions-table th {
+    background: rgba(255, 255, 255, 0.42);
+}
+
+.teacher-dashboard-glass .assignments-table td,
+.teacher-dashboard-glass .modern-submissions-table td {
+    background: transparent;
 }
 
 /* Breadcrumb */

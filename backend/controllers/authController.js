@@ -1,7 +1,10 @@
 const { validationResult } = require("express-validator");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const mongoose = require("mongoose");
 const Assignment = require("../models/Assignment");
+const Submission = require("../models/Submission");
+const Class = require("../models/Class");
 const TokenBlacklist = require("../models/TokenBlacklist");
 
 const register = async (req, res) => {
@@ -181,11 +184,75 @@ const teacherDashboard = (req, res) => {
   });
 };
 
-const performance = (req, res) => {
-  res.json({
-    success: true,
-    scores: [65, 72, 80, 75, 90],
-  });
+const performance = async (req, res) => {
+  try {
+    const studentOid = new mongoose.Types.ObjectId(req.user.userId);
+    const enrolledClasses = await Class.find({ students: studentOid }).select("_id").lean();
+    const classIds = enrolledClasses.map((cls) => cls._id);
+
+    const recentAssignments = classIds.length
+      ? await Assignment.find({ status: "published", classId: { $in: classIds } })
+          .select("title createdAt")
+          .sort({ createdAt: -1 })
+          .limit(5)
+          .lean()
+      : [];
+
+    const assignmentIds = recentAssignments.map((assignment) => assignment._id);
+    const submissions = assignmentIds.length
+      ? await Submission.find({ student: studentOid, assignment: { $in: assignmentIds } })
+          .select("assignment score submittedAt")
+          .sort({ submittedAt: -1 })
+          .lean()
+      : [];
+
+    const submissionMap = new Map();
+    submissions.forEach((submission) => {
+      const key = String(submission.assignment);
+      if (!submissionMap.has(key)) {
+        submissionMap.set(key, submission);
+      }
+    });
+
+    const chart = [...recentAssignments]
+      .reverse()
+      .map((assignment) => {
+        const submission = submissionMap.get(String(assignment._id));
+        const title = assignment.title || "Assignment";
+        const attempted = !!submission && submission.score != null;
+        return {
+          name: title,
+          shortName: title.length > 14 ? `${title.slice(0, 13)}…` : title,
+          score: attempted ? Number(submission.score || 0) : 0,
+          attempted,
+          submittedAt: submission?.submittedAt || null,
+        };
+      });
+
+    while (chart.length < 5) {
+      chart.unshift({
+        name: "",
+        shortName: "",
+        score: null,
+        attempted: false,
+        empty: true,
+      });
+    }
+
+    const scores = chart.map((item) => item.score);
+
+    return res.json({
+      success: true,
+      chart,
+      scores,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch performance data",
+      error: error.message,
+    });
+  }
 };
 
 const logout = async (req, res) => {
@@ -264,15 +331,31 @@ const refreshToken = async (req, res) => {
 
 const dashboardStats = async (req, res) => {
   try {
-    const totalAssignments = await Assignment.countDocuments({ teacher: req.user.userId });
-    const totalStudents = await User.countDocuments({ role: "student", isActive: true });
+    const teacherId = req.user.userId;
+    const teacherOid = new mongoose.Types.ObjectId(teacherId);
+
+    const totalAssignments = await Assignment.countDocuments({ teacher: teacherId });
+
+    const totalStudentsAgg = await Class.aggregate([
+      { $match: { teacher: teacherOid } },
+      { $project: { studentCount: { $size: { $ifNull: ["$students", []] } } } },
+      { $group: { _id: null, totalStudents: { $sum: "$studentCount" } } },
+    ]);
+    const totalStudents = (totalStudentsAgg[0] && totalStudentsAgg[0].totalStudents) || 0;
+
+    const assignmentIds = (await Assignment.find({ teacher: teacherId }).select("_id")).map((a) => a._id);
+    const totalSubmissions = await Submission.countDocuments({ assignment: { $in: assignmentIds } });
+    const pendingReviews = await Submission.countDocuments({
+      assignment: { $in: assignmentIds },
+      $or: [{ status: "Pending" }, { plagiarismScore: { $gte: 75 } }],
+    });
 
     return res.json({
       success: true,
       totalAssignments,
       totalStudents,
-      totalSubmissions: 0,
-      pendingReviews: 0,
+      totalSubmissions,
+      pendingReviews,
     });
   } catch (error) {
     return res.status(500).json({

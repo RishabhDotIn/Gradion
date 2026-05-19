@@ -1,36 +1,39 @@
 import React, { useEffect, useState } from 'react';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from 'recharts';
 import { apiCall } from '../../lib/apiConfig.js';
 import '../../styles/performanceCard.css';
 
 const PerformanceCard = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [improvement, setImprovement] = useState(0);
+
+  const normalizeChart = (items = []) => {
+    const trimmed = items.slice(-5);
+    while (trimmed.length < 5) {
+      trimmed.unshift({ name: "", shortName: "", score: null, attempted: false, empty: true });
+    }
+    return trimmed;
+  };
 
   useEffect(() => {
     const fetchPerformance = async () => {
       try {
         const result = await apiCall('/api/performance');
         
-        if (result.success && result.scores) {
-          const formattedData = result.scores.map((score, index) => ({
-            name: `Assignment ${index + 1}`,
-            shortName: `Assig ${index + 1}`,
-            score: score,
-            // Secondary trend line for comparison (slightly offset or smoothed)
-            trend: score * 0.85 + (Math.random() * 10) 
-          }));
-          
+        if (result.success) {
+          const formattedData = Array.isArray(result.chart) && result.chart.length
+            ? normalizeChart(result.chart)
+            : Array.isArray(result.scores)
+              ? normalizeChart(result.scores.map((score, index) => ({
+                  name: `Assignment ${index + 1}`,
+                  shortName: `Assig ${index + 1}`,
+                  score,
+                  attempted: true,
+                })))
+              : [];
+
           setData(formattedData);
           
-          // Calculate improvement
-          if (result.scores.length >= 2) {
-            const current = result.scores[result.scores.length - 1];
-            const last = result.scores[result.scores.length - 2];
-            const imp = Math.round(((current - last) / last) * 100);
-            setImprovement(imp);
-          }
         }
       } catch (error) {
         console.error('Error fetching performance data:', error);
@@ -51,69 +54,72 @@ const PerformanceCard = () => {
     );
   }
 
+  const values = data
+    .filter((item) => item && !item.empty && item.score != null)
+    .map((item) => Number(item.score || 0))
+    .filter((value) => Number.isFinite(value));
+  const average = values.length ? Math.round(values.reduce((sum, value) => sum + value, 0) / values.length) : 0;
+  const latest = values.length ? values[values.length - 1] : 0;
+  const best = values.length ? Math.max(...values) : 0;
+
   return (
-    <div className="performance-card">
-      <div className="performance-header">
-        <h3 className="performance-title">Performance</h3>
+    <div className="performance-card snapshot-card">
+      <div className="performance-header performance-header-row">
+        <div>
+          <h3 className="performance-title">Performance snapshot</h3>
+          <p className="performance-subtitle">Recent assignment scores</p>
+        </div>
+        <div className="performance-header-stats">
+          <div className="performance-stat-pill performance-stat-pill-header">
+            <span className="pill-label">Latest</span>
+            <strong>{latest}%</strong>
+          </div>
+          <div className="performance-stat-pill performance-stat-pill-header">
+            <span className="pill-label">Average</span>
+            <strong>{average}%</strong>
+          </div>
+          <div className="performance-stat-pill performance-stat-pill-header">
+            <span className="pill-label">Best</span>
+            <strong>{best}%</strong>
+          </div>
+        </div>
       </div>
       
       <div className="performance-chart-container">
         <ResponsiveContainer width="100%" height={180}>
-          <AreaChart data={data} margin={{ top: 10, right: 25, left: 25, bottom: 0 }}>
-            <defs>
-              <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#6C63FF" stopOpacity={0.1}/>
-                <stop offset="95%" stopColor="#6C63FF" stopOpacity={0}/>
-              </linearGradient>
-            </defs>
+          <BarChart data={data} margin={{ top: 12, right: 12, left: 0, bottom: 0 }} barCategoryGap="24%" barSize={26}>
             <XAxis 
               dataKey="shortName" 
               axisLine={false} 
               tickLine={false} 
-              tick={{ fill: '#94a3b8', fontSize: 10 }}
+              tick={{ fill: '#64748b', fontSize: 10, fontWeight: 500 }}
               dy={10}
               interval={0}
-              padding={{ left: 30, right: 30 }}
+              padding={{ left: 8, right: 8 }}
+              tickFormatter={(value) => (String(value).length > 14 ? `${String(value).slice(0, 13)}…` : value)}
             />
             <YAxis hide domain={[0, 100]} />
+            <CartesianGrid vertical={false} stroke="rgba(148, 163, 184, 0.12)" strokeDasharray="4 8" />
+            <ReferenceLine y={average} stroke="rgba(99, 102, 241, 0.35)" strokeDasharray="6 6" />
             <Tooltip 
               contentStyle={{ 
-                borderRadius: '10px', 
-                border: 'none', 
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                borderRadius: '14px', 
+                border: '1px solid rgba(226, 232, 240, 0.9)', 
+                boxShadow: '0 14px 30px rgba(15,23,42,0.12)',
+                background: 'rgba(255,255,255,0.96)',
                 fontSize: '12px'
               }}
-              cursor={{ stroke: '#6C63FF', strokeWidth: 1, strokeDasharray: '5 5' }}
+              cursor={{ fill: 'rgba(99, 102, 241, 0.06)' }}
+              formatter={(value) => [`${value}%`, 'Score']}
+              labelFormatter={(label) => `Assignment: ${label}`}
             />
-            <Area 
-              type="monotone" 
-              dataKey="trend" 
-              stroke="#C7C4FF" 
-              strokeWidth={2}
-              fill="transparent" 
-              dot={false}
-              activeDot={false}
-            />
-            <Area 
-              type="monotone" 
-              dataKey="score" 
-              stroke="#6C63FF" 
-              strokeWidth={3}
-              fillOpacity={1} 
-              fill="url(#colorScore)" 
-              dot={{ r: 4, fill: '#6C63FF', strokeWidth: 2, stroke: '#fff' }}
-              activeDot={{ r: 6, fill: '#6C63FF', strokeWidth: 2, stroke: '#fff' }}
-            />
-          </AreaChart>
+            <Bar dataKey="score" radius={[14, 14, 6, 6]}>
+              {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.empty ? 'transparent' : entry.attempted === false ? '#ef4444' : '#6366f1'} />
+              ))}
+            </Bar>
+          </BarChart>
         </ResponsiveContainer>
-      </div>
-
-      <div className="performance-footer">
-        <div className="improvement-value">{improvement}%</div>
-        <div className="improvement-text">
-          Your performance improved by {improvement}%<br />
-          compared to last assignments
-        </div>
       </div>
     </div>
   );

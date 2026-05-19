@@ -22,7 +22,7 @@ const TeacherViewAssignmentPage = () => {
     const fetchAssignment = async () => {
       setLoading(true);
       try {
-        const response = await apiCall(`${API_CONFIG.ENDPOINTS.ASSIGNMENTS}/${id}`);
+        const response = await apiCall(`${API_CONFIG.ENDPOINTS.ASSIGNMENTS_TEACHER}/${id}`);
         setAssignment(response.assignment || null);
       } catch {
         setAssignment(null);
@@ -32,11 +32,12 @@ const TeacherViewAssignmentPage = () => {
     fetchAssignment();
   }, [id]);
 
-  const handleDelete = async () => {
-    if (window.confirm("Are you sure you want to delete this assignment?")) {
-      await apiCall(`${API_CONFIG.ENDPOINTS.ASSIGNMENTS}/${id}`, "DELETE");
-      navigate("/teacher-dashboard");
-    }
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const handleDelete = () => setShowDeleteConfirm(true);
+  const doDelete = async () => {
+    setShowDeleteConfirm(false);
+    await apiCall(`${API_CONFIG.ENDPOINTS.ASSIGNMENTS_TEACHER}/${id}`, "DELETE");
+    navigate("/teacher-dashboard");
   };
 
   const handleEdit = () => {
@@ -181,6 +182,26 @@ const TeacherViewAssignmentPage = () => {
                 <i className="fas fa-pen" /> Edit Assignment
               </button>
             </div>
+            {/* Confirm modal for deletion */}
+            {showDeleteConfirm && (
+              <div className="modal-overlay" style={{ zIndex: 9999 }} onClick={() => setShowDeleteConfirm(false)}>
+                <div className="invite-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '540px' }}>
+                  <div className="modal-header">
+                    <h3>Delete Assignment</h3>
+                    <button type="button" className="close-modal" onClick={() => setShowDeleteConfirm(false)}>
+                      <i className="fas fa-times" />
+                    </button>
+                  </div>
+                  <div className="modal-body">
+                    <p style={{ color: '#475569' }}>Are you sure you want to delete this assignment? This action cannot be undone.</p>
+                    <div className="modal-footer" style={{ marginTop: '1.5rem' }}>
+                      <button type="button" className="cancel-btn" onClick={() => setShowDeleteConfirm(false)}>Cancel</button>
+                      <button type="button" className="send-btn" onClick={doDelete}>Delete</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </main>
       </div>

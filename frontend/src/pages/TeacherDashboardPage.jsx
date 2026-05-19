@@ -17,16 +17,13 @@ const MOCK_ASSIGNMENTS = [
   { id: 5, title: "Machine Learning Quiz", deadline: "2026-11-12", submissions: 35 },
 ];
 
-const MOCK_SUBMISSIONS = [
-  { id: 1, studentName: "Alice Johnson", assignmentTitle: "Advanced Data Structures", submittedAt: new Date() },
-  { id: 2, studentName: "Bob Smith", assignmentTitle: "Operating Systems Project", submittedAt: new Date() },
-  { id: 3, studentName: "Charlie Brown", assignmentTitle: "Database Normalization", submittedAt: new Date() },
-  { id: 4, studentName: "Diana Prince", assignmentTitle: "Web Security Lab", submittedAt: new Date() },
-  { id: 5, studentName: "Evan Wright", assignmentTitle: "Machine Learning Quiz", submittedAt: new Date() },
-];
-
 function TeacherDashboardPage() {
-  const [stats, setStats] = useState({ totalAssignments: 0, totalStudents: 0, totalSubmissions: 0, pendingReviews: "0.00%" });
+  const [stats, setStats] = useState({
+    totalAssignments: 0,
+    totalStudents: 0,
+    totalSubmissions: 0,
+    pendingReviews: 0,
+  });
   const [assignments, setAssignments] = useState([]);
   const [submissions, setSubmissions] = useState([]);
   const [performanceData, setPerformanceData] = useState([]);
@@ -41,30 +38,40 @@ function TeacherDashboardPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const [statsResult, assignmentsResult, performanceResult] = await Promise.allSettled([
-          apiCall("/api/dashboard/stats"),
+        const [dash, assignmentsResult, subsResult, performanceResult] = await Promise.allSettled([
+          apiCall(API_CONFIG.ENDPOINTS.DASHBOARD_TEACHER),
           apiCall(`${API_CONFIG.ENDPOINTS.TEACHER_RECENT}?limit=5`),
+          apiCall(`${API_CONFIG.ENDPOINTS.SUBMISSIONS}/teacher?limit=5&page=1`),
           apiCall(`${API_CONFIG.ENDPOINTS.TEACHER_PERFORMANCE}`),
         ]);
-        const statsData = statsResult.status === "fulfilled" ? statsResult.value : {};
-        const assignmentsData = assignmentsResult.status === "fulfilled" ? assignmentsResult.value : [];
-        const performanceData = performanceResult.status === "fulfilled" ? performanceResult.value : {};
-        const submissionsData = MOCK_SUBMISSIONS;
+
+        const dashData = dash.status === "fulfilled" ? dash.value : {};
         setStats({
-          totalAssignments: statsData.totalAssignments || 0,
-          totalStudents: statsData.totalStudents || 0,
-          totalSubmissions: statsData.totalSubmissions || 0,
-          pendingReviews: typeof statsData.pendingReviews === "number" ? `${statsData.pendingReviews.toFixed(2)}%` : (statsData.pendingReviews || "0.00%"),
+          totalAssignments: dashData.totalAssignments ?? 0,
+          totalStudents: dashData.totalStudents ?? 0,
+          totalSubmissions: dashData.totalSubmissions ?? 0,
+          pendingReviews: dashData.pendingReviews ?? 0,
+          previousWeek: dashData.previousWeek || null,
         });
+
+        const assignmentsData = assignmentsResult.status === "fulfilled" ? assignmentsResult.value : {};
         let finalAssignments = assignmentsData.assignments || assignmentsData || [];
         if (!Array.isArray(finalAssignments) || finalAssignments.length === 0) {
           finalAssignments = MOCK_ASSIGNMENTS;
         }
-        
-        let finalSubmissions = submissionsData.submissions || submissionsData || [];
-        if (!Array.isArray(finalSubmissions) || finalSubmissions.length === 0) {
-          finalSubmissions = MOCK_SUBMISSIONS;
+
+        const submissionsData = subsResult.status === "fulfilled" ? subsResult.value : {};
+        let finalSubmissions = (submissionsData.submissions || []).map((s) => ({
+          id: s._id,
+          studentName: s.student?.fullName || "Student",
+          assignmentTitle: s.assignment?.title || "Assignment",
+          submittedAt: s.submittedAt || s.createdAt,
+        }));
+        if (!finalSubmissions.length) {
+          finalSubmissions = [];
         }
+
+        const performanceData = performanceResult.status === "fulfilled" ? performanceResult.value : {};
 
         setAssignments(finalAssignments.slice(0, 5));
         setSubmissions(finalSubmissions.slice(0, 5));
@@ -73,7 +80,7 @@ function TeacherDashboardPage() {
         setPerformanceLoading(false);
       } catch {
         setAssignments(MOCK_ASSIGNMENTS);
-        setSubmissions(MOCK_SUBMISSIONS);
+        setSubmissions([]);
         setPerformanceData([]);
         setPerformanceImprovement(0);
         setPerformanceLoading(false);
@@ -96,6 +103,11 @@ function TeacherDashboardPage() {
               data={performanceData}
               improvement={performanceImprovement}
               loading={performanceLoading}
+              dashboardTotals={{
+                totalStudents: stats.totalStudents,
+                totalSubmissions: stats.totalSubmissions,
+                totalAssignments: stats.totalAssignments,
+              }}
             />
             <ProfileCard user={user} compact={true} />
           </div>

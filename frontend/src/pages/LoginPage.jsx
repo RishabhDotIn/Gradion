@@ -105,8 +105,7 @@ function LoginPage() {
             <div className="remember-me">
               <label className="checkbox-wrapper">
                 <input type="checkbox" id="rememberMe" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
-                <span className="checkmark" />
-                <span className="checkbox-label">Remember me for 30 days</span>
+                <span className="checkbox-label">Remember me for 7 days</span>
               </label>
             </div>
             {errorMessage ? <div className="error-message"><i className="fas fa-exclamation-circle" /> {errorMessage}</div> : null}

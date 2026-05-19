@@ -81,6 +81,18 @@ body {
     border-radius: 16px;
     padding: 32px;
     box-shadow: var(--shadow-lg);
+    animation: slideUpFade 0.6s ease-out;
+}
+
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .login-header {
@@ -237,36 +249,17 @@ body {
 .checkbox-wrapper {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 16px;
     cursor: pointer;
     user-select: none;
+    position: relative;
 }
 
 .checkbox-wrapper input[type="checkbox"] {
-    display: none;
-}
-
-.checkmark {
     width: 18px;
     height: 18px;
-    border: 2px solid var(--border-color);
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-}
-
-.checkbox-wrapper input[type="checkbox"]:checked+.checkmark {
-    background: var(--primary);
-    border-color: var(--primary);
-}
-
-.checkbox-wrapper input[type="checkbox"]:checked+.checkmark::after {
-    content: '✓';
-    color: #fff;
-    font-size: 12px;
-    font-weight: 700;
+    cursor: pointer;
+    accent-color: var(--primary);
 }
 
 .checkbox-label {

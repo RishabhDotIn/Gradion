@@ -17,13 +17,15 @@ function LandingNavbar() {
       } else if (user?.role === 'student') {
         navigate('/student-dashboard');
       }
+    } else {
+      navigate('/');
     }
   };
 
   return (
     <nav className="navbar">
       <div className="nav-container">
-        <div className="nav-logo" onClick={handleLogoClick} style={{ cursor: isAuthenticated ? 'pointer' : 'default' }}>
+        <div className="nav-logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
           <div className="logo-icon">
             <i className="fas fa-graduation-cap" />
           </div>

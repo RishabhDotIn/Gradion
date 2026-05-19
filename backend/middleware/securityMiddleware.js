@@ -4,22 +4,43 @@ const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss');
 const createDOMPurify = require('isomorphic-dompurify');
 
-// General rate limiting
+const isProduction = process.env.NODE_ENV === 'production';
+
+/** Parsed RATE_LIMIT_MAX from env, or null if unset / invalid */
+function envRateLimitMax() {
+  const raw = process.env.RATE_LIMIT_MAX;
+  if (raw === undefined || raw === '') return null;
+  const n = parseInt(String(raw), 10);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+// General rate limiting (applies to almost every /api hit)
+// 100/15min is easy to exceed in dev: StrictMode double-mount, HMR, dashboards firing 5+ parallel calls.
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  max: (req) => {
+    const fromEnv = envRateLimitMax();
+    if (fromEnv != null) return fromEnv;
+    return isProduction ? 800 : 20000;
+  },
   message: {
     success: false,
     message: 'Too many requests from this IP, please try again later.'
   },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => {
+    if (req.method === 'OPTIONS') return true;
+    const url = req.originalUrl || req.url || '';
+    if (url.startsWith('/api/health')) return true;
+    return false;
+  },
 });
 
 // Strict rate limiting for authentication
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 auth requests per windowMs
+  max: isProduction ? 5 : 80,
   message: {
     success: false,
     message: 'Too many authentication attempts, please try again later.'

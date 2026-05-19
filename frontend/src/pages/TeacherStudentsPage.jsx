@@ -1,48 +1,95 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
+import toast from "react-hot-toast";
 import DashboardSidebar from "../components/dashboard/DashboardSidebar.jsx";
 import DashboardHeader from "../components/dashboard/DashboardHeader.jsx";
+import { apiCall, API_CONFIG } from "../lib/apiConfig.js";
 import "../styles/teacherStudents.css";
 
-const MOCK_STUDENTS = [
-  { id: "st1", name: "Alex Rivera", email: "alex.rivera@example.com", joinedDate: "2024-01-15", status: "Active", avatar: "https://ui-avatars.com/api/?name=Alex+Rivera&background=6366f1&color=fff" },
-  { id: "st2", name: "Sarah Chen", email: "sarah.chen@university.edu", joinedDate: "2024-02-10", status: "Active", avatar: "https://ui-avatars.com/api/?name=Sarah+Chen&background=10b981&color=fff" },
-  { id: "st3", name: "Marcus Thorne", email: "m.thorne@tech.com", joinedDate: "2024-02-20", status: "Inactive", avatar: "https://ui-avatars.com/api/?name=Marcus+Thorne&background=f59e0b&color=fff" },
-  { id: "st4", name: "Elena Rodriguez", email: "elena.r@example.com", joinedDate: "2024-03-05", status: "Active", avatar: "https://ui-avatars.com/api/?name=Elena+Rodriguez&background=ef4444&color=fff" },
-  { id: "st5", name: "David Kim", email: "d.kim@university.edu", joinedDate: "2024-03-12", status: "Active", avatar: "https://ui-avatars.com/api/?name=David+Kim&background=8b5cf6&color=fff" },
-];
-
 function TeacherStudentsPage() {
-  const [showInviteModal, setShowInviteModal] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [isSending, setIsSending] = useState(false);
+  const [classes, setClasses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newClassName, setNewClassName] = useState("");
+  const [creating, setCreating] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [viewMode, setViewMode] = useState("students"); // 'students' or 'classes'
 
   const user = useMemo(() => {
     const userStr = localStorage.getItem("user") || sessionStorage.getItem("user");
-    if (!userStr) return { name: "Teacher", role: "Instructor" };
-    try { return JSON.parse(userStr); } catch { return { name: "Teacher", role: "Instructor" }; }
+    if (!userStr) return { fullName: "Teacher", role: "Instructor" };
+    try {
+      return JSON.parse(userStr);
+    } catch {
+      return { fullName: "Teacher", role: "Instructor" };
+    }
   }, []);
 
+  const loadClasses = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await apiCall(API_CONFIG.ENDPOINTS.CLASSES_TEACHER);
+      setClasses(data.classes || []);
+    } catch (e) {
+      toast.error(e.message || "Failed to load classes");
+      setClasses([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadClasses();
+  }, [loadClasses]);
+
+  const studentsFlat = useMemo(() => {
+    const rows = [];
+    for (const cls of classes) {
+      const studs = cls.students || [];
+      for (const st of studs) {
+        const sid = typeof st === "object" && st ? st._id || st.id : st;
+        rows.push({
+          key: `${cls._id}-${sid}`,
+          className: cls.name,
+          inviteCode: cls.inviteCode,
+          id: sid,
+          name: typeof st === "object" && st ? st.fullName || "Student" : "Student",
+          email: typeof st === "object" && st ? st.email || "" : "",
+        });
+      }
+    }
+    return rows;
+  }, [classes]);
+
   const filteredStudents = useMemo(() => {
-    return MOCK_STUDENTS.filter(student => 
-      student.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      student.email.toLowerCase().includes(searchTerm.toLowerCase())
+    const q = searchTerm.toLowerCase();
+    return studentsFlat.filter(
+      (s) =>
+        s.name.toLowerCase().includes(q) ||
+        s.email.toLowerCase().includes(q) ||
+        s.className.toLowerCase().includes(q)
     );
-  }, [searchTerm]);
+  }, [studentsFlat, searchTerm]);
 
-  const handleInviteStudent = (e) => {
+  const totalStudents = studentsFlat.length;
+
+  const handleCreateClass = async (e) => {
     e.preventDefault();
-    if (!inviteEmail) return;
-
-    setIsSending(true);
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Inviting student:", inviteEmail);
-      setIsSending(false);
-      setShowInviteModal(false);
-      setInviteEmail("");
-      alert(`Invitation sent to ${inviteEmail}!`);
-    }, 1500);
+    if (!newClassName.trim()) {
+      toast.error("Enter a class name.");
+      return;
+    }
+    setCreating(true);
+    try {
+      const data = await apiCall(API_CONFIG.ENDPOINTS.CLASSES, "POST", { name: newClassName.trim() });
+      toast.success(`Class created. Invite code: ${data.class?.inviteCode || ""}`);
+      setNewClassName("");
+      setShowCreateModal(false);
+      await loadClasses();
+    } catch (err) {
+      toast.error(err.message || "Could not create class");
+    } finally {
+      setCreating(false);
+    }
   };
 
   return (
@@ -53,144 +100,201 @@ function TeacherStudentsPage() {
         <main className="students-page-content">
           <div className="students-page-header">
             <div>
-              <h1 className="page-title">My Students</h1>
-              <p className="page-subtitle">Manage and invite students to your classes</p>
+              <h1 className="page-title">{viewMode === "classes" ? "My Classes" : "My Students"}</h1>
+              <p className="page-subtitle">{viewMode === "classes" ? "Classes you manage and their invite codes" : "Students enrolled in your classes (join via invite codes)"}</p>
             </div>
-            <button className="add-student-btn" onClick={() => setShowInviteModal(true)}>
-              <i className="fas fa-plus"></i> Student
+            <button className="add-student-btn" type="button" onClick={() => setShowCreateModal(true)}>
+              <i className="fas fa-chalkboard-teacher" /> Create Class
             </button>
           </div>
 
           <div className="students-stats-container">
-            <div className="stat-card total-students">
+            <div
+              className={`stat-card total-students ${viewMode === 'students' ? 'active' : ''}`}
+              role="button"
+              tabIndex={0}
+              onClick={() => setViewMode('students')}
+              onKeyDown={(e) => e.key === 'Enter' && setViewMode('students')}
+            >
               <div className="stat-icon">
-                <i className="fas fa-users"></i>
+                <i className="fas fa-users" />
               </div>
               <div className="stat-details">
                 <span className="stat-label">Total Students</span>
-                <h2 className="stat-value">{MOCK_STUDENTS.length}</h2>
-              </div>
-              <div className="stat-trend positive">
-                <i className="fas fa-arrow-up"></i> 12%
+                <h2 className="stat-value">{loading ? "—" : totalStudents}</h2>
               </div>
             </div>
-            {/* You can add more stat cards here if needed */}
+            <div
+              className={`stat-card total-students ${viewMode === 'classes' ? 'active' : ''}`}
+              style={{ borderColor: "#e0e7ff" }}
+              role="button"
+              tabIndex={0}
+              onClick={() => setViewMode('classes')}
+              onKeyDown={(e) => e.key === 'Enter' && setViewMode('classes')}
+            >
+              <div className="stat-icon" style={{ background: "#eef2ff" }}>
+                <i className="fas fa-door-open" style={{ color: "#4f46e5" }} />
+              </div>
+              <div className="stat-details">
+                <span className="stat-label">Active Classes</span>
+                <h2 className="stat-value">{loading ? "—" : classes.length}</h2>
+              </div>
+            </div>
           </div>
 
-          <div className="students-list-container">
-            <div className="list-card">
-              <div className="list-card-header">
-                <h3>Student List</h3>
-                <div className="list-actions">
-                  <div className="search-box">
-                    <input 
-                      type="text" 
-                      placeholder="Search students..." 
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                    <i className="fas fa-search"></i>
+          {/* Render either Classes or Students based on the big stat toggles (no small toggles) */}
+          {viewMode === "classes" ? (
+            classes.length > 0 ? (
+              <div className="students-list-container" style={{ marginTop: "0.75rem" }}>
+                <div className="list-card">
+                  <div className="list-card-header">
+                    <h3>Your classes & invite codes</h3>
+                  </div>
+                  <div className="table-responsive">
+                    <table className="students-table">
+                      <thead>
+                        <tr>
+                          <th>Class</th>
+                          <th>Invite code</th>
+                          <th>Students</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {classes.map((c) => (
+                          <tr key={c._id}>
+                            <td>{c.name}</td>
+                            <td>
+                              <code style={{ fontSize: "1rem", letterSpacing: "0.08em" }}>{c.inviteCode}</code>
+                            </td>
+                            <td>{(c.students && c.students.length) || 0}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </div>
-              <div className="table-responsive">
-                <table className="students-table">
-                  <thead>
-                    <tr>
-                      <th>Student</th>
-                      <th>Email</th>
-                      <th>Joined Date</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredStudents.length > 0 ? (
-                      filteredStudents.map((student) => (
-                        <tr key={student.id}>
-                          <td>
-                            <div className="student-profile-cell">
-                              <img src={student.avatar} alt={student.name} className="student-avatar-small" />
-                              <span className="student-name-bold">{student.name}</span>
-                            </div>
+            ) : (
+              <div className="students-list-container" style={{ marginTop: "0.75rem" }}>
+                <div className="list-card">
+                  <div className="list-card-header">
+                    <h3>Your classes & invite codes</h3>
+                  </div>
+                  <div style={{ padding: "24px", color: "#64748b" }}>
+                    No classes yet. Click Create Class to add your first class.
+                  </div>
+                </div>
+              </div>
+            )
+          ) : (
+            <div className="students-list-container" style={{ marginTop: "0.75rem" }}>
+              <div className="list-card">
+                <div className="list-card-header">
+                  <h3>All enrolled students</h3>
+                  <div className="list-actions">
+                    <div className="search-box">
+                      <input
+                        type="text"
+                        placeholder="Search students..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                      />
+                      <i className="fas fa-search" />
+                    </div>
+                  </div>
+                </div>
+                <div className="table-responsive">
+                  <table className="students-table">
+                    <thead>
+                      <tr>
+                        <th>Student</th>
+                        <th>Email</th>
+                        <th>Class</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {loading ? (
+                        <tr>
+                          <td colSpan="3" className="no-results-cell">
+                            Loading…
                           </td>
-                          <td>{student.email}</td>
-                          <td>{new Date(student.joinedDate).toLocaleDateString()}</td>
-                          <td>
-                            <span className={`status-tag ${student.status.toLowerCase()}`}>
-                              {student.status}
-                            </span>
-                          </td>
-                          <td>
-                            <div className="table-row-actions">
-                              <button className="row-action-btn" title="Message">
-                                <i className="fas fa-envelope"></i>
-                              </button>
-                              <button className="row-action-btn delete" title="Remove">
-                                <i className="fas fa-trash-alt"></i>
-                              </button>
+                        </tr>
+                      ) : filteredStudents.length > 0 ? (
+                        filteredStudents.map((student) => (
+                          <tr key={student.key}>
+                            <td>
+                              <div className="student-profile-cell">
+                                <img
+                                  src={`https://ui-avatars.com/api/?name=${encodeURIComponent(student.name)}&background=6366f1&color=fff`}
+                                  alt=""
+                                  className="student-avatar-small"
+                                />
+                                <span className="student-name-bold">{student.name}</span>
+                              </div>
+                            </td>
+                            <td>{student.email || "—"}</td>
+                            <td>{student.className}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="3" className="no-results-cell">
+                            <div className="no-results-content">
+                              <i className="fas fa-user-friends" />
+                              <p>No students yet. Share an invite code from a class row above.</p>
                             </div>
                           </td>
                         </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="5" className="no-results-cell">
-                          <div className="no-results-content">
-                            <i className="fas fa-search"></i>
-                            <p>No students found matching your search.</p>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </main>
       </div>
 
-      {/* Invite Modal */}
-      {showInviteModal && (
-        <div className="modal-overlay" onClick={() => setShowInviteModal(false)}>
+      {showCreateModal && (
+        <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
           <div className="invite-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div className="header-icon">
-                <i className="fas fa-paper-plane"></i>
+                <i className="fas fa-chalkboard" />
               </div>
-              <h3>Invite Student</h3>
-              <p>Send a request to join Gradion directly to their email.</p>
-              <button className="close-modal" onClick={() => setShowInviteModal(false)}>
-                <i className="fas fa-times"></i>
+              <h3>Create class</h3>
+              <p>A unique invite code (6–8 characters) is generated automatically for students to join.</p>
+              <button type="button" className="close-modal" onClick={() => setShowCreateModal(false)}>
+                <i className="fas fa-times" />
               </button>
             </div>
-            <form onSubmit={handleInviteStudent} className="modal-body">
+            <form onSubmit={handleCreateClass} className="modal-body">
               <div className="form-group">
-                <label htmlFor="student-email">Email Address</label>
+                <label htmlFor="class-name">Class name</label>
                 <div className="input-with-icon">
-                  <i className="fas fa-envelope"></i>
-                  <input 
-                    id="student-email"
-                    type="email" 
-                    placeholder="Enter student's email..." 
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    required
+                  <i className="fas fa-book" />
+                  <input
+                    id="class-name"
+                    type="text"
+                    placeholder="e.g. CS 101 — Web Development"
+                    value={newClassName}
+                    onChange={(e) => setNewClassName(e.target.value)}
                     autoFocus
                   />
                 </div>
               </div>
               <div className="modal-footer">
-                <button type="button" className="cancel-btn" onClick={() => setShowInviteModal(false)}>Cancel</button>
-                <button type="submit" className="send-btn" disabled={isSending}>
-                  {isSending ? (
+                <button type="button" className="cancel-btn" onClick={() => setShowCreateModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="send-btn" disabled={creating}>
+                  {creating ? (
                     <>
-                      <i className="fas fa-spinner fa-spin"></i> Sending...
+                      <i className="fas fa-spinner fa-spin" /> Creating…
                     </>
                   ) : (
                     <>
-                      <i className="fas fa-paper-plane"></i> Send Invitation
+                      <i className="fas fa-check" /> Create
                     </>
                   )}
                 </button>
