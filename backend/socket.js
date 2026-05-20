@@ -2,12 +2,17 @@ const { Server } = require('socket.io');
 const jwt = require('jsonwebtoken');
 
 function initSocket(server, app) {
+  // Build allowed origins similar to server CORS (include env ALLOWED_ORIGINS)
+  const defaultOrigins = ['http://localhost:3000', 'http://localhost:5173'];
+  const envOrigins = (process.env.ALLOWED_ORIGINS || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const socketOrigins = Array.from(new Set([...defaultOrigins, ...envOrigins]));
+
   const io = new Server(server, {
     cors: {
-      origin: [
-        'http://localhost:5173',
-        'http://localhost:3000',
-      ],
+      origin: socketOrigins,
       credentials: true,
     },
     pingInterval: 25000,
