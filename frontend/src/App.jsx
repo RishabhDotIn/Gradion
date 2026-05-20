@@ -14,6 +14,7 @@ import AssignmentEditorPage from "./pages/AssignmentEditorPage.jsx";
 import TeacherViewAssignmentPage from "./pages/TeacherViewAssignmentPage.jsx";
 import StudentSubmissionsPage from "./pages/StudentSubmissionsPage.jsx";
 import StudentViewSubmissionPage from "./pages/StudentViewSubmissionPage.jsx";
+import ProfilePage from "./pages/ProfilePage.jsx";
 
 import TeacherSubmissionsPage from "./pages/TeacherSubmissionsPage.jsx";
 import TeacherStudentsPage from "./pages/TeacherStudentsPage.jsx";
@@ -127,6 +128,15 @@ function App() {
         element={
           <ProtectedRoute role="student">
             <AssignmentEditorPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <ProfilePage />
           </ProtectedRoute>
         }
       />

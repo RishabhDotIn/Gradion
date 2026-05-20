@@ -9,7 +9,6 @@ const teacherDefaultItems = [
   { path: "/teacher-assignments", icon: "fas fa-book-open", label: "Assignments" },
   { path: "/submissions", icon: "fas fa-file-alt", label: "Submissions" },
   { path: "/students", icon: "fas fa-users", label: "Manage Classes" },
-  { path: "/reports", icon: "fas fa-chart-bar", label: "Reports" },
 ];
 
 const studentDefaultItems = STUDENT_MENU_ITEMS;

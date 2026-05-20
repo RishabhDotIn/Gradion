@@ -18,6 +18,7 @@ const aiRoutes = require('./routes/aiRoutes');
 const classRoutes = require('./routes/classRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const submissionRoutes = require('./routes/submissionRoutes');
+const mailboxRoutes = require('./routes/mailboxRoutes');
 const { performance, dashboardStats } = require('./controllers/authController');
 
 // Load environment variables from backend/.env (works even if process cwd is repo root)
@@ -25,6 +26,10 @@ dotenv.config({ path: require('path').join(__dirname, '.env') });
 
 // Initialize Express app
 const app = express();
+const path = require('path');
+
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
 // When behind nginx / Render / Railway, set TRUST_PROXY=1 so req.ip is the client (rate limits work per user).
 if (process.env.TRUST_PROXY === '1' || process.env.TRUST_PROXY === 'true') {
@@ -71,6 +76,8 @@ app.use(express.urlencoded({ extended: true }));
 // Connect to MongoDB
 connectDB();
 
+const profileRoutes = require('./routes/profileRoutes');
+
 // Routes with specific rate limiting
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/assignments', assignmentRoutes);
@@ -78,6 +85,12 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/classes', classRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/submissions', submissionRoutes);
+app.use('/api/profile', profileRoutes);
+app.use('/api/mailbox', mailboxRoutes);
+
+// Serve uploaded static files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -138,3 +151,5 @@ process.on('SIGTERM', async () => {
   await mongoose.connection.close();
   process.exit(0);
 });
+
+// Trigger restart

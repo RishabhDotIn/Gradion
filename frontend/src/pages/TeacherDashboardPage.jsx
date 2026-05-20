@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import DashboardSidebar from "../components/dashboard/DashboardSidebar.jsx";
 import DashboardHeader from "../components/dashboard/DashboardHeader.jsx";
 import DashboardStats from "../components/dashboard/DashboardStats.jsx";
@@ -29,11 +29,27 @@ function TeacherDashboardPage() {
   const [performanceData, setPerformanceData] = useState([]);
   const [performanceImprovement, setPerformanceImprovement] = useState(0);
   const [performanceLoading, setPerformanceLoading] = useState(true);
-  const user = useMemo(() => {
+  const [user, setUser] = useState(() => {
     const userStr = localStorage.getItem("user") || sessionStorage.getItem("user");
     if (!userStr) return null;
     try { return JSON.parse(userStr); } catch { return null; }
-  }, []);
+  });
+
+  const syncUserImage = (profileImage) => {
+    if (!profileImage) return;
+    setUser((prev) => (prev ? { ...prev, profileImage } : prev));
+
+    const localUserRaw = localStorage.getItem("user");
+    if (localUserRaw) {
+      const localUser = JSON.parse(localUserRaw);
+      localStorage.setItem("user", JSON.stringify({ ...localUser, profileImage }));
+    }
+    const sessionUserRaw = sessionStorage.getItem("user");
+    if (sessionUserRaw) {
+      const sessionUser = JSON.parse(sessionUserRaw);
+      sessionStorage.setItem("user", JSON.stringify({ ...sessionUser, profileImage }));
+    }
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -87,6 +103,19 @@ function TeacherDashboardPage() {
       }
     };
     load();
+  }, []);
+
+  useEffect(() => {
+    const loadProfileImage = async () => {
+      try {
+        const res = await apiCall("/api/profile");
+        const profileImage = res?.data?.profile?.profileImage || "";
+        syncUserImage(profileImage);
+      } catch {
+        // Keep dashboard usable even when profile request fails.
+      }
+    };
+    loadProfileImage();
   }, []);
 
   return (

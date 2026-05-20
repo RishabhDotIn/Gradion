@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
+import { API_CONFIG } from '../../lib/apiConfig.js';
 import '../../styles/profileCard.css';
 
 const ProfileCard = ({ user, compact }) => {
@@ -53,18 +54,23 @@ const ProfileCard = ({ user, compact }) => {
 
   const isSameDay = (d1, d2) => {
     return d1.getDate() === d2.getDate() &&
-           d1.getMonth() === d2.getMonth() &&
-           d1.getFullYear() === d2.getFullYear();
+      d1.getMonth() === d2.getMonth() &&
+      d1.getFullYear() === d2.getFullYear();
   };
+
+  const profileImage = user?.profileImage || "";
+  const imageUrl = profileImage
+    ? (profileImage.startsWith("http") ? profileImage : `${API_CONFIG.BASE_URL}${profileImage}`)
+    : `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.fullName || "User")}&background=6366f1&color=fff&size=150`;
 
   return (
     <div className={`profile-card ${compact ? 'compact' : ''}`}>
       <div className="profile-section">
         <div className="profile-image-container">
-          <img 
-            src="/profile.png" 
-            alt="Profile" 
-            className="profile-image" 
+          <img
+            src={imageUrl}
+            alt="Profile"
+            className="profile-image"
           />
         </div>
         <h2 className="user-name">{user?.fullName || "Andreas Iniesta"}</h2>
@@ -88,8 +94,8 @@ const ProfileCard = ({ user, compact }) => {
           {days.map((date, index) => {
             const selected = isSameDay(date, selectedDate);
             return (
-              <div 
-                key={index} 
+              <div
+                key={index}
                 className={`date-item ${selected ? 'selected' : ''}`}
                 onClick={() => setSelectedDate(new Date(date))}
               >

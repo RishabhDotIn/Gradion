@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import DashboardSidebar from "../components/dashboard/DashboardSidebar.jsx";
@@ -23,9 +23,7 @@ function StudentDashboardPage() {
   const [upcomingAssignments, setUpcomingAssignments] = useState([]);
   const [recentSubmissions, setRecentSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
-  
-
-  const user = useMemo(() => {
+  const [user, setUser] = useState(() => {
     const userStr = localStorage.getItem("user") || sessionStorage.getItem("user");
     if (!userStr) return null;
     try {
@@ -33,7 +31,23 @@ function StudentDashboardPage() {
     } catch {
       return null;
     }
-  }, []);
+  });
+
+  const syncUserImage = (profileImage) => {
+    if (!profileImage) return;
+    setUser((prev) => (prev ? { ...prev, profileImage } : prev));
+
+    const localUserRaw = localStorage.getItem("user");
+    if (localUserRaw) {
+      const localUser = JSON.parse(localUserRaw);
+      localStorage.setItem("user", JSON.stringify({ ...localUser, profileImage }));
+    }
+    const sessionUserRaw = sessionStorage.getItem("user");
+    if (sessionUserRaw) {
+      const sessionUser = JSON.parse(sessionUserRaw);
+      sessionStorage.setItem("user", JSON.stringify({ ...sessionUser, profileImage }));
+    }
+  };
 
   const loadData = useCallback(async (opts = {}) => {
     const silent = opts.silent === true;
@@ -105,9 +119,22 @@ function StudentDashboardPage() {
     loadData();
   }, [loadData]);
 
+  useEffect(() => {
+    const loadProfileImage = async () => {
+      try {
+        const res = await apiCall("/api/profile");
+        const profileImage = res?.data?.profile?.profileImage || "";
+        syncUserImage(profileImage);
+      } catch {
+        // Keep dashboard usable even when profile request fails.
+      }
+    };
+    loadProfileImage();
+  }, []);
+
   const studentMenuItems = STUDENT_MENU_ITEMS;
 
-  
+
 
   return (
     <div className="dashboard-layout">
@@ -117,7 +144,7 @@ function StudentDashboardPage() {
         <main className="dashboard-content">
           {/* Classes toolbar removed: dashboard focuses on analytics only */}
 
-          
+
 
           {loading ? (
             <div className="dashboard-stats" style={{ opacity: 0.65 }}>
