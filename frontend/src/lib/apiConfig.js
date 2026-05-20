@@ -37,6 +37,8 @@ export const API_CONFIG = {
     CLASSES_JOIN: "/api/classes/join",
     SUBMISSIONS: "/api/submissions",
     SUBMISSIONS_RUN: "/api/submissions/run",
+    MAILBOX: "/api/mailbox",
+    MAILBOX_READ: "/api/mailbox/read",
     PERFORMANCE: "/api/performance",
     HEALTH: "/api/health",
   },

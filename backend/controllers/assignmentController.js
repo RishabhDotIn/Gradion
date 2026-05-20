@@ -1,6 +1,8 @@
 const Assignment = require("../models/Assignment");
 const Class = require("../models/Class");
 const Submission = require("../models/Submission");
+const MailboxNotification = require("../models/MailboxNotification");
+const User = require("../models/User");
 const mongoose = require("mongoose");
 const { coerceQuestionsInput, questionsAreComplete } = require("../utils/assignmentQuestions");
 
@@ -42,6 +44,21 @@ const createAssignment = async (req, res) => {
       questions,
       teacher: req.user.userId,
     });
+
+    const classStudents = Array.isArray(cls.students) ? cls.students : [];
+    if (classStudents.length > 0) {
+      const teacher = await User.findById(req.user.userId).select("fullName").lean();
+      const teacherName = teacher?.fullName || "Your teacher";
+      await MailboxNotification.insertMany(
+        classStudents.map((studentId) => ({
+          user: studentId,
+          assignment: assignment._id,
+          classId: cls._id,
+          title: "New assignment posted",
+          message: `${teacherName} posted "${assignment.title}". Deadline: ${new Date(assignment.deadline).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}`,
+        }))
+      );
+    }
 
     return res.status(201).json({
       success: true,

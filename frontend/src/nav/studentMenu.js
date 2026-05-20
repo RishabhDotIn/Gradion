@@ -4,5 +4,4 @@ export const STUDENT_MENU_ITEMS = [
   { path: "/student-classes", icon: "fas fa-chalkboard", label: "My classes" },
   { path: "/student-assignments", icon: "fas fa-book-open", label: "Assignments" },
   { path: "/my-submissions", icon: "fas fa-upload", label: "My Submissions" },
-  { path: "/performance", icon: "fas fa-chart-line", label: "Performance" },
 ];
