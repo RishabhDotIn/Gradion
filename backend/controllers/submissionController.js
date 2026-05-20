@@ -4,6 +4,7 @@ const Assignment = require('../models/Assignment');
 const Submission = require('../models/Submission');
 const Class = require('../models/Class');
 const { getGeminiConfig, formatGeminiApiError } = require('../config/geminiEnv');
+const { isValidObjectId } = require('../utils/objectId');
 
 function parseJsonFromText(text) {
   if (!text || typeof text !== 'string') return null;
@@ -71,6 +72,10 @@ function mentionsSyntaxError(text) {
 }
 
 async function loadAssignmentForStudent(studentId, assignmentId) {
+  if (!isValidObjectId(assignmentId)) {
+    return { error: { status: 400, message: 'Invalid assignmentId' } };
+  }
+
   const assignment = await Assignment.findById(assignmentId).lean();
   if (!assignment) return { error: { status: 404, message: 'Assignment not found' } };
   const enrolled = await Class.exists({
@@ -418,6 +423,10 @@ const getStudentSubmissions = async (req, res) => {
 
 const getStudentSubmissionById = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ success: false, message: 'Invalid submission id' });
+    }
+
     const studentId = req.user.userId;
     const sub = await Submission.findOne({
       _id: req.params.id,
@@ -439,6 +448,10 @@ const getStudentSubmissionById = async (req, res) => {
 
 const patchTeacherSubmission = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ success: false, message: 'Invalid submission id' });
+    }
+
     const teacherId = req.user.userId;
     const submission = await Submission.findById(req.params.id).populate({
       path: 'assignment',

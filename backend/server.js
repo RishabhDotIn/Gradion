@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const path = require('path');
 const connectDB = require('./config/db');
 const { auth, roleAuth } = require('./middleware/authMiddleware');
 const {
@@ -21,12 +22,18 @@ const submissionRoutes = require('./routes/submissionRoutes');
 const mailboxRoutes = require('./routes/mailboxRoutes');
 const { performance, dashboardStats } = require('./controllers/authController');
 
-// Load environment variables from backend/.env (works even if process cwd is repo root)
-dotenv.config({ path: require('path').join(__dirname, '.env') });
+// Load environment variables from backend/.env or repo-root .env
+const envCandidates = [
+  path.join(__dirname, '.env'),
+  path.join(__dirname, '..', '.env'),
+];
+for (const envPath of envCandidates) {
+  const result = dotenv.config({ path: envPath });
+  if (!result.error && result.parsed) break;
+}
 
 // Initialize Express app
 const app = express();
-const path = require('path');
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));

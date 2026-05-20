@@ -153,6 +153,8 @@ Gradion/
 
 ### Backend (`backend/.env`)
 
+Copy `backend/.env.example` to `backend/.env` and fill in your real values before starting the server.
+
 ```env
 MONGODB_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret

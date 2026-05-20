@@ -5,6 +5,7 @@ const MailboxNotification = require("../models/MailboxNotification");
 const User = require("../models/User");
 const mongoose = require("mongoose");
 const { coerceQuestionsInput, questionsAreComplete } = require("../utils/assignmentQuestions");
+const { isValidObjectId } = require("../utils/objectId");
 
 const makeShortLabel = (value, maxLength = 14) => {
   const text = String(value || "Assignment").trim();
@@ -13,6 +14,13 @@ const makeShortLabel = (value, maxLength = 14) => {
 
 const createAssignment = async (req, res) => {
   try {
+    if (!isValidObjectId(req.body.classId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid classId",
+      });
+    }
+
     const cls = await Class.findOne({
       _id: req.body.classId,
       teacher: req.user.userId,
@@ -236,6 +244,13 @@ const getAssignmentPerformance = async (req, res) => {
 
 const getAssignmentById = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid assignment id",
+      });
+    }
+
     const assignment = await Assignment.findOne({
       _id: req.params.id,
       teacher: req.user.userId,
@@ -265,7 +280,21 @@ const getAssignmentById = async (req, res) => {
 
 const updateAssignment = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid assignment id",
+      });
+    }
+
     if (req.body.classId) {
+      if (!isValidObjectId(req.body.classId)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid classId",
+        });
+      }
+
       const cls = await Class.findOne({
         _id: req.body.classId,
         teacher: req.user.userId,
@@ -364,6 +393,13 @@ const getPublicAssignments = async (req, res) => {
 
 const getPublicAssignmentById = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid assignment id",
+      });
+    }
+
     const assignment = await Assignment.findOne({ 
       _id: req.params.id, 
       status: "published" 
@@ -408,6 +444,13 @@ const getPublicAssignmentById = async (req, res) => {
 
 const deleteAssignment = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid assignment id",
+      });
+    }
+
     const deleted = await Assignment.findOneAndDelete({
       _id: req.params.id,
       teacher: req.user.userId,
@@ -514,6 +557,13 @@ const getStudentAssignments = async (req, res) => {
 
 const getStudentAssignmentById = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid assignment id",
+      });
+    }
+
     const studentOid = new mongoose.Types.ObjectId(req.user.userId);
     const assignment = await Assignment.findOne({
       _id: req.params.id,
