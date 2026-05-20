@@ -254,6 +254,11 @@ function normalizeTopicResponse(raw, fallbackLanguage, fallbackCount = 1) {
   return { suggestedTopic: '', questions: [] };
 }
 
+function normalizeAiResponse(raw, fallbackLanguage, fallbackCount = 1) {
+  const normalized = normalizeTopicResponse(raw, fallbackLanguage, fallbackCount);
+  return normalized.questions || [];
+}
+
 async function generateAssignmentQuestions(req, res) {
   try {
     const mode = String(req.body.mode || 'topic').trim();
@@ -324,10 +329,30 @@ async function generateAssignmentQuestions(req, res) {
       source: 'gemini',
     });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to generate assignment questions',
-      error: formatGeminiApiError(error),
+    const mode = String(req.body.mode || 'topic').trim();
+    const payload = req.body || {};
+    const fallbackLanguage = sanitizeLanguage(payload.language || payload?.question?.language || payload?.seedQuestion?.language);
+
+    if (mode === 'enhance') {
+      const enhancedSeed = payload.question || payload.seedQuestion || payload;
+      return res.json({
+        success: true,
+        mode,
+        question: normalizeQuestion(enhancedSeed, fallbackLanguage),
+        source: 'fallback',
+        warning: formatGeminiApiError(error),
+      });
+    }
+
+    const numQuestions = Math.min(Math.max(parseInt(payload.numQuestions, 10) || 1, 1), 20);
+    const fallback = fallbackFromTopic({ ...payload, numQuestions, language: fallbackLanguage });
+    return res.json({
+      success: true,
+      mode: 'topic',
+      questions: fallback.questions,
+      suggestedTopic: fallback.suggestedTopic,
+      source: 'fallback',
+      warning: formatGeminiApiError(error),
     });
   }
 }
