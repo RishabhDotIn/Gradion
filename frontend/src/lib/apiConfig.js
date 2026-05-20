@@ -6,9 +6,12 @@
  */
 const envBase = (import.meta.env.VITE_API_BASE_URL || "").trim().replace(/\/$/, "");
 
+// Resolve base URL:
+// - prefer VITE_API_BASE_URL when set
+// - in dev use empty so Vite proxy can forward `/api` to backend
+// - in production fallback to the current origin (so relative `/api` calls go to same host)
 const resolvedBase =
-  envBase ||
-  (import.meta.env.DEV ? "" : "http://localhost:5000");
+  envBase || (import.meta.env.DEV ? "" : (typeof window !== "undefined" ? window.location.origin : ""));
 
 export const API_CONFIG = {
   BASE_URL: resolvedBase,

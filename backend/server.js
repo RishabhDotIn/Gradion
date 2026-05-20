@@ -130,9 +130,20 @@ app.use('*', (req, res) => {
   });
 });
 
-// Start server
+// Start HTTP server and initialize Socket.IO
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+const http = require('http');
+const server = http.createServer(app);
+const { initSocket } = require('./socket');
+
+// initialize socket.io and attach to app
+try {
+  initSocket(server, app);
+} catch (err) {
+  console.error('Failed to initialize Socket.IO', err);
+}
+
+server.listen(PORT, () => {
   console.log(`🚀 Gradion Backend Server running on port ${PORT}`);
   console.log(`📱 API Health Check: http://localhost:${PORT}/api/health`);
 });
@@ -141,14 +152,16 @@ app.listen(PORT, () => {
 process.on('SIGINT', async () => {
   console.log('\n🛑 Shutting down server...');
   const mongoose = require('mongoose');
-  await mongoose.connection.close();
+  try { await mongoose.connection.close(); } catch (e) {}
+  try { server.close(); } catch (e) {}
   process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
   console.log('\n🛑 Shutting down server...');
   const mongoose = require('mongoose');
-  await mongoose.connection.close();
+  try { await mongoose.connection.close(); } catch (e) {}
+  try { server.close(); } catch (e) {}
   process.exit(0);
 });
 
