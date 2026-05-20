@@ -1,211 +1,264 @@
-# 🚀 Gradion – Automated Academic Evaluation Suite
+# Gradion — Automated Academic Evaluation Suite
 
-<p align="center">
-An intelligent backend-driven platform for managing programming assignments, submissions, and academic evaluation workflows.
-</p>
+Gradion is a full-stack academic evaluation platform for managing classes, assignments, submissions, and role-based dashboards for teachers and students.
 
-<p align="center">
+## Overview
 
-![Node.js](https://img.shields.io/badge/Node.js-Backend-green)
-![Express](https://img.shields.io/badge/Express.js-Framework-black)
-![MongoDB](https://img.shields.io/badge/MongoDB-Database-green)
-![License](https://img.shields.io/badge/License-Academic-blue)
-![Status](https://img.shields.io/badge/Status-Active-brightgreen)
+This project demonstrates a complete client-server application with:
+- `Node.js` + `Express` backend
+- `MongoDB` + `Mongoose` database layer
+- JWT authentication and role-based access control
+- REST API design and modular MVC-style structure
+- Frontend deployment on Vercel and backend deployment on Render
+- Real-time-ready architecture with Socket.IO support
 
-</p>
+## Problem Statement
 
----
+Manual assignment handling is slow, difficult to track, and hard to scale across classes. Gradion simplifies this by providing:
+- centralized assignment creation
+- student submission tracking
+- class and dashboard management
+- secure login and authorization
+- deployment-friendly separation of frontend and backend
 
-## 📌 Overview
+## Objectives
 
-**Gradion** is a backend-focused academic platform designed to streamline the creation, submission, and management of programming assignments in educational environments.
+- Build a clean MVC-style backend
+- Support student and teacher roles
+- Store academic data securely in MongoDB
+- Expose stable REST endpoints for the frontend
+- Demonstrate deployment and production-readiness
 
-The system enables **role-based interaction between teachers and students**, while maintaining a modular and scalable backend architecture built with **Node.js, Express, and MongoDB**.
+## Key Features
 
-The project demonstrates key backend engineering concepts including:
-
-- Client–Server Architecture  
-- REST API Design  
-- Authentication & Authorization  
-- Modular Backend Structure  
-- Database Integration  
-- File Handling in Node.js  
-
----
-
-## ✨ Key Features
-
-🔐 **User Authentication**
-- Secure login and registration
+### Authentication and Authorization
+- Register and login for `student` and `teacher`
 - JWT-based authentication
-- Role-based access (Teacher / Student)
+- protected routes using middleware
+- logout and token refresh support
 
-📝 **Assignment Management**
-- Teachers create and manage assignments
-- Retrieve assignment details
-- Assignment listing for students
+### Academic Workflow
+- teacher dashboard
+- student dashboard
+- class management
+- assignment creation and viewing
+- submission workflow
+- profile management
 
-💻 **Code Submission System**
-- Students submit solutions
-- Submission timestamps recorded
-- Code storage and file handling
+### Security and Backend Practices
+- `helmet` security headers
+- rate limiting
+- XSS and input sanitization
+- file upload handling
+- structured logging
 
-⚙ **Backend Architecture**
-- RESTful API structure
-- Express.js routing and middleware
-- Modular controller-based architecture
+### Real-Time Ready
+- Socket.IO initializer included
+- room-based architecture ready for notifications and live updates
 
-📂 **File Handling**
-- Save submitted code files
-- File streaming with Node.js `fs` module
-
----
-
-## 🛠 Technology Stack
+## Tech Stack
 
 | Layer | Technology |
-|------|-------------|
-| Backend | Node.js |
-| Framework | Express.js |
-| Database | MongoDB |
-| Authentication | JWT |
-| Security | bcrypt |
-| Frontend | HTML / CSS / JavaScript |
-| Tools | Git, GitHub, Postman |
+|---|---|
+| Frontend | React, Vite, React Router |
+| Backend | Node.js, Express |
+| Database | MongoDB, Mongoose |
+| Auth | JWT, bcryptjs |
+| Security | Helmet, rate limiter, sanitizers |
+| Realtime | Socket.IO |
+| Deployment | Vercel, Render |
 
----
-
-## 🧠 System Architecture
+## Architecture
 
 ```mermaid
 graph TD
-
-A[Client Browser] -->|HTTP Requests| B[Node.js Server]
-B --> C[Express Routes]
-C --> D[Controllers]
-D --> E[MongoDB Database]
-D --> F[File System]
-
-E --> B
-F --> B
-B -->|JSON Response| A
+  U[User Browser] --> V[Vercel Frontend]
+  V -->|REST API| R[Render Backend]
+  R --> C[Express Routes]
+  C --> M[Controllers]
+  M --> D[MongoDB]
+  M --> F[File Uploads]
+  R --> S[Socket.IO]
 ```
 
----
+## Project Structure
 
-## 📁 Project Structure
-
+```text
+Gradion/
+├── backend/
+│   ├── config/
+│   ├── controllers/
+│   ├── middleware/
+│   ├── models/
+│   ├── routes/
+│   ├── uploads/
+│   ├── utils/
+│   ├── views/
+│   ├── server.js
+│   └── socket.js
+├── frontend/
+│   ├── src/
+│   ├── public/
+│   ├── vite.config.js
+│   └── vercel.json
+└── README.md
 ```
-gradion/
-│
-├── config/        # Database configuration
-├── controllers/   # Business logic
-├── middleware/    # Authentication & error handling
-├── models/        # Database schemas
-├── routes/        # API route definitions
-├── utils/         # Utility functions
-├── public/        # Frontend assets
-│
-├── server.js      # Main Express server
-└── basicServer.js # Demonstration HTTP server
-```
 
----
+## Evaluation Criteria Mapping
 
-## ⚙ Environment Configuration
+### 1) Presentation
+- clear project title and overview
+- understandable architecture diagram
+- feature summary and technology stack
+- deployment and workflow notes
 
-Create a `.env` file in the root directory.
+### 2) File Work
+- modular folders for routes, controllers, models, middleware, and utils
+- clean project structure
+- environment config support
+- deployment files such as `vercel.json`
 
-```
+### 3) Project Work and Viva
+- authentication flow
+- role-based dashboard handling
+- assignment and submission workflow
+- REST API endpoints
+- deployment on Vercel and Render
+- Socket.IO-ready backend
+- security middleware and logging
+
+## API Highlights
+
+### Health and Root
+- `GET /` → API info
+- `GET /api` → API summary
+- `GET /api/health` → health check
+
+### Auth
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/auth/verify`
+- `POST /api/auth/logout`
+- `POST /api/auth/refresh`
+
+### Core Modules
+- assignments
+- classes
+- dashboard
+- submissions
+- profile
+- mailbox
+
+## Environment Variables
+
+### Backend (`backend/.env`)
+
+```env
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
 PORT=5000
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_secret_key
+GEMINI_API_KEY=your_gemini_api_key
+GEMINI_MODEL=gemini-2.5-flash
+ALLOWED_ORIGINS=https://your-frontend.vercel.app
+TRUST_PROXY=true
 ```
 
----
+### Frontend (`frontend/.env`)
 
-## 🚀 Installation
-
-Clone the repository
-
-```bash
-git clone https://github.com/yourusername/gradion.git
-cd gradion
+```env
+VITE_API_BASE_URL=https://your-backend.onrender.com
+VITE_SOCKET_URL=https://your-backend.onrender.com
 ```
 
-Install dependencies
+## Local Development
+
+### Backend
 
 ```bash
+cd backend
 npm install
+npm run dev
 ```
 
-Run the server
+### Frontend
 
 ```bash
-node server.js
+cd frontend
+npm install
+npm run dev
 ```
 
----
+## Deployment Guide
 
-## 🔄 Development Workflow
+### Backend on Render
 
-The project follows a **branch-based development model**.
+1. Create a Render Web Service
+2. Set root directory to `backend`
+3. Build command: `npm install`
+4. Start command: `npm start`
+5. Add environment variables:
+   - `MONGODB_URI`
+   - `JWT_SECRET`
+   - `GEMINI_API_KEY`
+   - `GEMINI_MODEL`
+   - `ALLOWED_ORIGINS`
+   - `TRUST_PROXY=true`
 
-| Branch | Purpose |
-|------|---------|
-| auth-core | Authentication & server setup |
-| assignment-module | Assignment management |
-| submission-module | Submission system |
-| frontend-module | Frontend integration |
+### Frontend on Vercel
 
-Typical workflow:
+1. Import the repository into Vercel
+2. Set root directory to `frontend`
+3. Build command: `npm run build`
+4. Output directory: `dist`
+5. Add environment variables:
+   - `VITE_API_BASE_URL=https://your-backend.onrender.com`
+   - `VITE_SOCKET_URL=https://your-backend.onrender.com`
+6. Ensure [frontend/vercel.json](frontend/vercel.json) is included for SPA refresh support
 
-1️⃣ Create feature branch  
-2️⃣ Implement module  
-3️⃣ Commit changes  
-4️⃣ Push to GitHub  
-5️⃣ Create Pull Request  
-6️⃣ Review & merge to `main`
+## Testing
 
----
+### Health Check
 
-## 🎓 Academic Implementation
+```bash
+curl https://your-backend.onrender.com/api/health
+```
 
-This project demonstrates practical implementation of:
+### Login Test
 
-- Client–Server Architecture
-- HTTP Request Handling
-- Express Framework Routing
-- Middleware Implementation
-- MongoDB Integration
-- File Handling
-- Exception & Error Handling
+```bash
+$tmp = Join-Path $env:TEMP 'gradion-login.json'
+'{"email":"chetna@gradion.com","password":"chetna123"}' | Set-Content -NoNewline -Encoding utf8 $tmp
+curl.exe -i -X POST "https://your-backend.onrender.com/api/auth/login" -H "Content-Type: application/json" --data-binary "@$tmp"
+```
 
----
+### Build Check
 
-## 👨‍💻 Team
+```bash
+cd frontend
+npm run build
+```
 
-| Member | Responsibility |
-|------|----------------|
-| **Rishabh** | Backend Architecture & Authentication |
-| **Ridhi** | Assignment Management |
-| **Reyan** | Frontend & Backend Integration |
-| **Rohan** | Submission & File Handling |
+## Notes for Viva
 
----
+- Frontend and backend are deployed separately
+- API calls go from Vercel frontend to Render backend
+- Browser refresh on routes is handled by SPA rewrite
+- CORS is controlled using `ALLOWED_ORIGINS`
+- Security is handled using middleware and sanitization
 
-## 🔮 Future Enhancements
+## Future Enhancements
 
-Planned improvements include:
+- unit tests for auth and submissions
+- Swagger/OpenAPI docs
+- file storage with Cloudinary or S3
+- plagiarism detection
+- live notifications using Socket.IO rooms
 
-- AI-based assignment generation
-- Automated code execution
-- Plagiarism detection
-- Code quality analysis
-- Instructor analytics dashboard
+## Team
 
----
+- Rishabh — backend, auth, deployment
+- other contributors — frontend and academic workflow modules
 
-<p align="center">
-Built with ❤️
-</p>
+## License
+
+Academic project for evaluation purposes.
