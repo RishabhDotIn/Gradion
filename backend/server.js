@@ -102,6 +102,28 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
 // Health check
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Gradion Backend API',
+    docs: '/api/health',
+    endpoints: {
+      health: '/api/health',
+      auth: '/api/auth/login',
+      register: '/api/auth/register',
+      dashboard: '/api/dashboard/stats',
+    },
+  });
+});
+
+app.get('/api', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Gradion API root',
+    docs: '/api/health',
+  });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({
     success: true,
