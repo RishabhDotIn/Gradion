@@ -38,17 +38,23 @@ const generalLimiter = rateLimit({
 });
 
 // Strict rate limiting for authentication
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: isProduction ? 5 : 80,
-  message: {
-    success: false,
-    message: 'Too many authentication attempts, please try again later.'
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  skipSuccessfulRequests: true,
-});
+// For prototypes you can disable this by setting PROTOTYPE_DISABLE_AUTH_LIMIT=true
+let authLimiter;
+if (String(process.env.PROTOTYPE_DISABLE_AUTH_LIMIT).toLowerCase() === 'true') {
+  authLimiter = (req, res, next) => next();
+} else {
+  authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: isProduction ? 5 : 80,
+    message: {
+      success: false,
+      message: 'Too many authentication attempts, please try again later.'
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    skipSuccessfulRequests: true,
+  });
+}
 
 // Rate limiting for file uploads
 const uploadLimiter = rateLimit({
