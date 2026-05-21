@@ -148,9 +148,18 @@
 
 .section-header {
     display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
     justify-content: space-between;
     align-items: center;
+    gap: 0.75rem;
     margin-bottom: 24px;
+}
+
+.upcoming-assignments-section .section-header,
+.recent-submissions-section .section-header {
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f1f5f9;
 }
 
 .section-title {
@@ -158,6 +167,19 @@
     font-weight: 700;
     color: #1e293b;
     margin: 0;
+    line-height: 1.25;
+}
+
+.upcoming-assignments-section .section-title,
+.recent-submissions-section .section-title {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.upcoming-assignments-section .view-all-btn,
+.recent-submissions-section .view-all-btn {
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .view-all-btn {
@@ -320,4 +342,99 @@
 .status-badge.failed {
     background: #fef2f2;
     color: #ef4444;
+}
+
+/* Responsive: student dashboard tables and grid (desktop layout unchanged above breakpoints) */
+@media (max-width: 1024px) {
+    .dashboard-grid-content {
+        grid-template-columns: 1fr;
+        margin-top: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-content {
+        padding: 1.25rem;
+        padding-top: 1.5rem;
+    }
+
+    /* Student dashboard — title left, View all right (same as desktop) */
+    .dashboard-content > .upcoming-assignments-section .section-header,
+    .dashboard-content > .recent-submissions-section .section-header {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+    }
+
+    .dashboard-content > .upcoming-assignments-section .section-title,
+    .dashboard-content > .recent-submissions-section .section-title {
+        flex: 1 1 auto;
+        min-width: 0;
+        margin-bottom: 0;
+        text-align: left;
+    }
+
+    .dashboard-content > .upcoming-assignments-section .view-all-btn,
+    .dashboard-content > .recent-submissions-section .view-all-btn {
+        flex-shrink: 0;
+        white-space: nowrap;
+        align-self: center;
+        width: auto;
+    }
+
+    .assignment-title-cell {
+        min-width: 0;
+    }
+
+    .assignment-title-cell span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 12rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .upcoming-assignments-section,
+    .recent-submissions-section {
+        padding: 1rem;
+        margin-top: 1.25rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .section-title {
+        font-size: 1rem;
+    }
+}
+
+/* Teacher dashboard Recent Assignments — same header row as desktop on all screen sizes */
+@media (max-width: 768px) {
+    .tables-grid > .upcoming-assignments-section .section-header {
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+    }
+
+    .tables-grid > .upcoming-assignments-section .section-title {
+        width: auto !important;
+        text-align: left !important;
+        margin-bottom: 0 !important;
+    }
+
+    .tables-grid > .upcoming-assignments-section .section-header-actions,
+    .tables-grid > .upcoming-assignments-section .section-header > div:last-child {
+        display: inline-flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        flex-shrink: 0 !important;
+        width: auto !important;
+    }
+
+    .tables-grid > .upcoming-assignments-section .view-all-btn {
+        align-self: center !important;
+        width: auto !important;
+    }
 }

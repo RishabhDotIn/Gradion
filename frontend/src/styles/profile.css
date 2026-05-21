@@ -288,6 +288,39 @@
   .profile-grid {
     grid-template-columns: 1fr;
   }
+
+  .profile-container {
+    padding: 1.25rem;
+  }
+
+  .profile-page-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .profile-upload-modal {
+    width: calc(100vw - 2rem);
+    max-width: 24rem;
+    margin: 1rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-image-section {
+    padding: 1.25rem;
+  }
+
+  .profile-card-glass {
+    padding: 1.25rem;
+  }
+
+  .btn-primary-glass {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 /* Password Visibility Toggle */

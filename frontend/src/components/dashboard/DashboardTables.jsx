@@ -7,9 +7,13 @@ function DashboardTables({ assignments, submissions }) {
       <section className="upcoming-assignments-section" style={{ margin: 0, height: '100%', display: 'flex', flexDirection: 'column' }}>
         <div className="section-header">
           <h3 className="section-title">Recent Assignments</h3>
-          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-            <button className="view-all-btn" onClick={() => { window.location.href = "./AssignmentTDashbd.html"; }}>View All</button>
-            <button className="table-action-btn" type="button" style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer' }}><i className="fas fa-ellipsis-v" /></button>
+          <div className="section-header-actions">
+            <button className="view-all-btn" type="button" onClick={() => navigate("/teacher-assignments")}>
+              View All
+            </button>
+            <button className="table-action-btn" type="button" aria-label="More options">
+              <i className="fas fa-ellipsis-v" />
+            </button>
           </div>
         </div>
 

@@ -2148,6 +2148,49 @@ body {
     margin-top: 32px;
 }
 
+/* Recent Assignments — header: title left, actions right (same on mobile & desktop) */
+.tables-grid > .upcoming-assignments-section .section-header {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-bottom: 1rem;
+    margin-bottom: 0;
+    border-bottom: 1px solid var(--border-color, #f1f5f9);
+}
+
+.tables-grid > .upcoming-assignments-section .section-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    text-align: left;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.tables-grid > .upcoming-assignments-section .section-header-actions,
+.tables-grid > .upcoming-assignments-section .section-header > div:last-child {
+    display: inline-flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+    flex-shrink: 0;
+}
+
+.tables-grid > .upcoming-assignments-section .view-all-btn {
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.tables-grid > .upcoming-assignments-section .section-header .table-action-btn {
+    flex-shrink: 0;
+}
+
 /* Recent Submissions Section */
 .submissions-section {
     background: var(--bg-light);
@@ -2283,13 +2326,147 @@ body {
     }
 }
 
-@media (max-width: 600px) {
+/* Mobile: bottom navigation bar (keeps nav usable; desktop sidebar unchanged above 768px) */
+@media (max-width: 768px) {
+    .dashboard-layout {
+        flex-direction: column;
+        min-height: 100vh;
+        min-height: 100dvh;
+    }
+
     .sidebar {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: auto;
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        z-index: 150;
+        border-top: 1px solid var(--border-color);
+        border-right: none;
+        box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.08);
+    }
+
+    .sidebar-header,
+    .sidebar-footer {
         display: none;
+    }
+
+    .sidebar-nav {
+        flex-direction: row;
+        flex: 1;
+        padding: 0.5rem 0.5rem;
+        gap: 0.125rem;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        justify-content: space-around;
+        align-items: center;
+    }
+
+    .sidebar-link {
+        flex-direction: column;
+        flex-shrink: 0;
+        justify-content: center;
+        align-items: center;
+        padding: 0.5rem 0.625rem;
+        gap: 0;
+        min-width: 3rem;
+    }
+
+    .sidebar-logo .logo-text,
+    .sidebar-link span {
+        display: none;
+    }
+
+    .sidebar-link i {
+        font-size: 1.125rem;
+        width: auto;
+    }
+
+    .dashboard-header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        column-gap: 0.5rem;
+        height: 4rem;
+        min-height: 4rem;
+        padding: 0 0.75rem;
+        width: 100%;
+        max-width: 100%;
+        overflow: visible;
+        z-index: 200;
+    }
+
+    .header-left {
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .header-title {
+        font-size: 22px;
+        line-height: 1.2;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .header-right {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        gap: 0.375rem;
+        flex-shrink: 0;
+        min-width: max-content;
+        overflow: visible;
+        position: relative;
+    }
+
+    .header-search {
+        display: none !important;
+    }
+
+    .header-mailbox,
+    .header-icon-btn,
+    .header-user {
+        flex-shrink: 0;
+        position: relative;
+    }
+
+    .header-icon-btn {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+
+    .header-user {
+        padding: 0.125rem 0.375rem 0.125rem 0.125rem;
+        z-index: 210;
+        overflow: visible;
+    }
+
+    .header-avatar {
+        width: 2rem;
+        height: 2rem;
+    }
+
+    .header-user-info {
+        display: none;
+    }
+
+    .user-dropdown {
+        z-index: 1200;
+        top: calc(100% + 8px);
+    }
+
+    .mailbox-dropdown {
+        z-index: 1200;
     }
 
     .dashboard-main {
         margin-left: 0;
+        padding-bottom: 4.5rem;
     }
 
     .dashboard-stats {
@@ -2297,12 +2474,246 @@ body {
     }
 
     .dashboard-content {
-        padding: 20px;
+        padding: 1.25rem;
     }
 
     .content-header {
         flex-direction: column;
-        gap: 16px;
+        gap: 1rem;
         align-items: flex-start;
+    }
+
+    .tables-grid {
+        gap: 1rem;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 0.75rem 1rem;
+        font-size: 0.8125rem;
+    }
+
+    .table-header {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .dashboard-header {
+        padding: 0 0.5rem;
+        column-gap: 0.375rem;
+    }
+
+    .header-right {
+        gap: 0.25rem;
+    }
+
+    .header-icon-btn {
+        width: 2.375rem;
+        height: 2.375rem;
+        font-size: 0.8125rem;
+    }
+
+    .header-avatar {
+        width: 1.875rem;
+        height: 1.875rem;
+    }
+
+    .header-user {
+        padding: 0.125rem 0.25rem 0.125rem 0.125rem;
+    }
+
+    .dropdown-arrow {
+        font-size: 0.625rem;
+        margin-left: 0;
+    }
+
+    .assignments-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .page-header-right {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .btn-create {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Teacher dashboard — Recent Assignments & Recent Submissions (phone) */
+@media (max-width: 768px) {
+    .tables-grid {
+        margin-top: 1.25rem;
+        gap: 1.25rem;
+    }
+
+    .tables-grid > .upcoming-assignments-section {
+        margin: 0 !important;
+        padding: 1rem;
+        border-radius: 1rem;
+        min-width: 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .tables-grid > .upcoming-assignments-section .section-header {
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        margin-bottom: 0;
+        padding-bottom: 0.875rem;
+    }
+
+    .tables-grid > .upcoming-assignments-section .section-title {
+        font-size: 1rem;
+        width: auto !important;
+        max-width: none !important;
+        text-align: left !important;
+        margin-bottom: 0 !important;
+    }
+
+    .tables-grid > .upcoming-assignments-section .section-header-actions {
+        display: inline-flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        width: auto !important;
+    }
+
+    .tables-grid > .upcoming-assignments-section .view-all-btn {
+        align-self: center !important;
+        width: auto !important;
+    }
+
+    /* Horizontal scroll for Recent Assignments table on phone */
+    .tables-grid .assignments-table-container {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        width: 100%;
+        max-width: 100%;
+        padding-bottom: 0.375rem;
+        scrollbar-width: thin;
+    }
+
+    .tables-grid .assignments-table {
+        min-width: 36rem;
+        width: max-content;
+    }
+
+    .tables-grid .assignments-table th,
+    .tables-grid .assignments-table td {
+        padding: 0.625rem 0.75rem;
+        font-size: 0.8125rem;
+        white-space: nowrap;
+    }
+
+    .tables-grid .assignment-title-cell {
+        min-width: 8.5rem;
+    }
+
+    .tables-grid .assignment-title-cell span {
+        max-width: 7.5rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    /* Recent Submissions spacing on phone */
+    .tables-grid .submissions-section {
+        min-width: 0;
+        width: 100%;
+        box-sizing: border-box;
+        border-radius: 1rem;
+    }
+
+    .tables-grid .submissions-section .table-header {
+        padding: 1rem 1rem 0.625rem;
+    }
+
+    .tables-grid .submissions-section .table-title {
+        font-size: 1rem;
+    }
+
+    .tables-grid .submissions-list {
+        padding: 0.25rem 0;
+    }
+
+    .tables-grid .submission-item {
+        padding: 0.75rem 1rem;
+        gap: 0.625rem;
+        align-items: center;
+    }
+
+    .tables-grid .submission-avatar {
+        width: 2.25rem;
+        height: 2.25rem;
+        flex-shrink: 0;
+    }
+
+    .tables-grid .submission-info {
+        min-width: 0;
+        flex: 1 1 auto;
+        overflow: hidden;
+    }
+
+    .tables-grid .submission-student,
+    .tables-grid .submission-assignment {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .tables-grid .submission-time {
+        flex-shrink: 0;
+        font-size: 0.6875rem;
+        color: var(--text-muted);
+    }
+
+    .tables-grid .submissions-section .table-footer {
+        padding: 0.75rem 1rem 1rem;
+    }
+
+    .tables-grid .btn-view-all-outline {
+        padding: 0.625rem 1rem;
+        font-size: 0.8125rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .tables-grid {
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .tables-grid > .upcoming-assignments-section {
+        padding: 0.875rem;
+    }
+
+    .tables-grid .assignments-table {
+        min-width: 32rem;
+    }
+
+    .tables-grid .submission-item {
+        padding: 0.625rem 0.875rem;
+        gap: 0.5rem;
+    }
+
+    .tables-grid .submission-time {
+        display: none;
+    }
+
+    .tables-grid .submissions-section .table-header {
+        padding: 0.875rem 0.875rem 0.5rem;
+    }
+
+    .tables-grid .submissions-section .table-footer {
+        padding: 0.625rem 0.875rem 0.875rem;
     }
 }

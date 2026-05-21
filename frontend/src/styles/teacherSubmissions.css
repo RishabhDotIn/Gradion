@@ -2,6 +2,9 @@
   padding: 2rem;
   max-width: 1400px;
   margin: 0 auto;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
   animation: fadeIn 0.4s ease-out;
 }
 
@@ -126,6 +129,11 @@
   color: #475569;
 }
 
+.filter-chips-scroll {
+  flex: 1;
+  min-width: 0;
+}
+
 .filter-chips {
   display: flex;
   gap: 0.75rem;
@@ -161,20 +169,23 @@
   border: 1px solid #e2e8f0;
   overflow: hidden;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  min-height: 450px; /* Prevent shrinking when empty */
+  max-width: 100%;
 }
 
 .table-responsive {
   width: 100%;
+  max-width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
 }
 
 .modern-submissions-table {
   width: 100%;
+  min-width: 52rem;
   border-collapse: collapse;
   text-align: left;
-  table-layout: auto; /* allow the table to adapt on small screens */
+  table-layout: fixed;
 }
 
 .modern-submissions-table th {
@@ -468,6 +479,23 @@
   .submissions-filters-card .filter-label { display: inline-block; }
   .search-wrapper { flex: unset; width: 100%; }
   .submissions-filters-card .filter-select { width: 100%; }
+
+  .filter-chips-scroll {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  .filter-chips {
+    flex-wrap: nowrap;
+    width: max-content;
+  }
+
+  .filter-chip {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
 }
 /* Compact Modal Styles */
 .modal-overlay {
@@ -717,5 +745,115 @@
   
   .status-badge-wrapper {
     align-self: flex-start;
+  }
+}
+
+/* Responsive: submissions table and filters */
+@media (max-width: 1024px) {
+  .submissions-toolbar {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .modern-submissions-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 768px) {
+  .submissions-page-content {
+    padding: 1rem 0.75rem 1.5rem;
+  }
+
+  .page-header-alt {
+    margin-bottom: 1.25rem;
+  }
+
+  .page-title-alt {
+    font-size: 1.375rem;
+  }
+
+  .page-subtitle-alt {
+    font-size: 0.875rem;
+  }
+
+  .submissions-filters-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.875rem;
+    padding: 1rem;
+  }
+
+  .search-wrapper {
+    flex: none;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .submissions-filters-card .filter-label {
+    display: block;
+    flex-shrink: 0;
+  }
+
+  .filter-group-status,
+  .filter-group-assignment {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .filter-chips-scroll {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    margin: 0 -0.25rem;
+    padding: 0 0.25rem 0.125rem;
+  }
+
+  .filter-chips {
+    flex-wrap: nowrap;
+    width: max-content;
+    gap: 0.5rem;
+  }
+
+  .filter-chip {
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding: 0.45rem 1rem;
+    font-size: 0.8125rem;
+  }
+
+  .submissions-filters-card .filter-select {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .submissions-table-container {
+    overflow: hidden;
+    border-radius: 12px;
+  }
+
+  .submissions-table-container .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+
+  .modern-submissions-table th,
+  .modern-submissions-table td {
+    padding: 0.75rem 0.625rem;
+  }
+
+  .student-avatar-small {
+    width: 36px;
+    height: 36px;
+  }
+
+  .student-info-cell {
+    gap: 0.625rem;
   }
 }
