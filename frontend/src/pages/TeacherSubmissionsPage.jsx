@@ -156,22 +156,24 @@ function TeacherSubmissionsPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <div className="filter-group">
+            <div className="filter-group filter-group-status">
               <span className="filter-label">Status:</span>
-              <div className="filter-chips">
-                {["All", "Graded", "Pending", "Late", "Failed"].map((status) => (
-                  <button
-                    key={status}
-                    type="button"
-                    className={`filter-chip ${statusFilter === status ? "active" : ""}`}
-                    onClick={() => setStatusFilter(status)}
-                  >
-                    {status}
-                  </button>
-                ))}
+              <div className="filter-chips-scroll">
+                <div className="filter-chips">
+                  {["All", "Graded", "Pending", "Late", "Failed"].map((status) => (
+                    <button
+                      key={status}
+                      type="button"
+                      className={`filter-chip ${statusFilter === status ? "active" : ""}`}
+                      onClick={() => setStatusFilter(status)}
+                    >
+                      {status}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
-            <div className="filter-group">
+            <div className="filter-group filter-group-assignment">
               <span className="filter-label">Assignment:</span>
               <select className="filter-select" value={assignmentFilter} onChange={(e) => { setAssignmentFilter(e.target.value); setPage(1); }}>
                 <option value="all">All assignments</option>

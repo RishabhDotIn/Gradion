@@ -396,5 +396,30 @@
   .editor-snapshot-container {
     padding: 1rem;
   }
+
+  .submission-status-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .code-block pre,
+  .editor-snapshot pre {
+    overflow-x: auto;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .submission-title {
+    font-size: 1.375rem;
+  }
+
+  .view-submission-page {
+    padding: 1rem;
+  }
+
+  .question-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 

@@ -1051,6 +1051,18 @@
     }
 }
 
+@media (max-width: 768px) {
+    .create-assignment-content,
+    .dashboard-content {
+        padding: 1.25rem;
+    }
+
+    .step-progress {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
 @media (max-width: 600px) {
     .form-card,
     .summary-card {

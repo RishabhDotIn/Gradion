@@ -119,6 +119,19 @@
 }
 
 /* Responsive adjustments */
+@media (max-width: 768px) {
+    .performance-card {
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .performance-chart-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        max-width: 100%;
+    }
+}
+
 @media (max-width: 640px) {
     .performance-card {
         max-width: 100%;

@@ -97,6 +97,36 @@
   padding: 0.5rem;
 }
 
+/* Responsive: full-width AI sidebar on mobile */
+@media (max-width: 768px) {
+  .ai-sidebar-container {
+    width: 100% !important;
+    max-width: 100vw;
+  }
+
+  .ai-sidebar-header {
+    padding: 1rem;
+  }
+
+  .ai-sidebar-content {
+    padding: 1rem;
+  }
+
+  .ai-resize-handle {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .ai-header-title {
+    font-size: 1rem;
+  }
+
+  .ai-score-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .ai-close-btn:hover {
   color: #ef4444;
 }

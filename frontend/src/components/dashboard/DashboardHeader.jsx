@@ -21,8 +21,8 @@ function DashboardHeader({ user }) {
         setShowMailbox(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
   useEffect(() => {
@@ -52,7 +52,8 @@ function DashboardHeader({ user }) {
     ? (user.profileImage.startsWith("http") ? user.profileImage : `${API_CONFIG.BASE_URL}${user.profileImage}`)
     : `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || user?.fullName || "User")}&background=3B82F6&color=fff`;
 
-  const openMailbox = async () => {
+  const openMailbox = async (e) => {
+    e.stopPropagation();
     setShowMailbox((prev) => !prev);
     if (showMailbox) return;
 
@@ -108,7 +109,14 @@ function DashboardHeader({ user }) {
           )}
         </div>
         <button className="header-icon-btn" type="button"><i className="fas fa-bell" /></button>
-        <div className="header-user" onClick={() => setShowDropdown(!showDropdown)} ref={dropdownRef}>
+        <div
+          className="header-user"
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowDropdown((prev) => !prev);
+          }}
+          ref={dropdownRef}
+        >
           <div className="header-avatar">
             <img id="userAvatar" src={avatarUrl} alt="Profile" />
           </div>

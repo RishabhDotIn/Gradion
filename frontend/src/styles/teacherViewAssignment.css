@@ -294,3 +294,51 @@
   background: #5a52e0;
   transform: translateY(-2px);
 }
+
+/* Responsive: teacher view assignment */
+@media (max-width: 1024px) {
+  .view-assignment-content {
+    padding: 0 1.5rem 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .view-assignment-header-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .view-assignment-meta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .question-card-header {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .view-assignment-content {
+    padding: 0 1rem 1.25rem;
+  }
+
+  .view-assignment-header {
+    padding: 1.25rem;
+    border-radius: 1rem;
+  }
+
+  .view-assignment-title {
+    font-size: 1.375rem;
+  }
+
+  .view-assignment-actions {
+    flex-direction: column;
+  }
+
+  .btn-delete,
+  .btn-edit {
+    width: 100%;
+    justify-content: center;
+  }
+}

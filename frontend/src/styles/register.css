@@ -381,6 +381,23 @@ body {
 }
 
 /* Responsive */
+@media (max-width: 768px) {
+    .register-container {
+        padding: 1.5rem 1rem;
+        min-height: 100vh;
+        min-height: 100dvh;
+    }
+
+    .register-card {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .role-selector {
+        flex-direction: column;
+    }
+}
+
 @media (max-width: 480px) {
     body {
         padding: 20px 16px;
