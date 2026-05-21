@@ -6,6 +6,15 @@ const Assignment = require("../models/Assignment");
 const Submission = require("../models/Submission");
 const Class = require("../models/Class");
 const TokenBlacklist = require("../models/TokenBlacklist");
+const { insertEvaluationLog } = require("../utils/postgresLog");
+
+const logAuthEvent = async ({ userId, role, feature, status, notes, metadata }) => {
+  try {
+    await insertEvaluationLog({ userId, role, feature, status, notes, metadata });
+  } catch (error) {
+    console.error("PostgreSQL auth log error:", error.message);
+  }
+};
 
 const register = async (req, res) => {
   try {
@@ -46,6 +55,18 @@ const register = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "30d" }
     );
+
+    await logAuthEvent({
+      userId: user._id,
+      role: user.role,
+      feature: "auth.register",
+      status: "success",
+      notes: "User registration successful",
+      metadata: {
+        email: user.email,
+        ip: req.ip,
+      },
+    });
 
     return res.status(201).json({
       success: true,
@@ -116,6 +137,19 @@ const login = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn }
     );
+
+    await logAuthEvent({
+      userId: user._id,
+      role: user.role,
+      feature: "auth.login",
+      status: "success",
+      notes: "User login successful",
+      metadata: {
+        email: user.email,
+        rememberMe: Boolean(rememberMe),
+        ip: req.ip,
+      },
+    });
 
     return res.json({
       success: true,
@@ -268,6 +302,17 @@ const logout = async (req, res) => {
       reason: 'logout'
     });
 
+    await logAuthEvent({
+      userId: decoded.userId,
+      role: decoded.role,
+      feature: "auth.logout",
+      status: "success",
+      notes: "User logout successful",
+      metadata: {
+        ip: req.ip,
+      },
+    });
+
     return res.json({
       success: true,
       message: "Logout successful",
@@ -289,6 +334,18 @@ const refreshToken = async (req, res) => {
     // Check if token is close to expiration (within 5 minutes)
     const timeUntilExpiry = decoded.exp * 1000 - Date.now();
     if (timeUntilExpiry > 5 * 60 * 1000) {
+      await logAuthEvent({
+        userId: decoded.userId,
+        role: decoded.role,
+        feature: "auth.refresh",
+        status: "skipped",
+        notes: "Token refresh skipped; token still valid",
+        metadata: {
+          timeUntilExpiry,
+          ip: req.ip,
+        },
+      });
+
       return res.json({
         success: true,
         message: "Token is still valid",
@@ -313,6 +370,17 @@ const refreshToken = async (req, res) => {
       userId: decoded.userId,
       expiresAt: new Date(decoded.exp * 1000),
       reason: 'refresh'
+    });
+
+    await logAuthEvent({
+      userId: decoded.userId,
+      role: decoded.role,
+      feature: "auth.refresh",
+      status: "success",
+      notes: "Token refreshed successfully",
+      metadata: {
+        ip: req.ip,
+      },
     });
 
     return res.json({
