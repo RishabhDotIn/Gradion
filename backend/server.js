@@ -20,6 +20,7 @@ const classRoutes = require('./routes/classRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const submissionRoutes = require('./routes/submissionRoutes');
 const mailboxRoutes = require('./routes/mailboxRoutes');
+const postgresRoutes = require('./routes/postgresRoutes');
 const { performance, dashboardStats } = require('./controllers/authController');
 const { checkPostgresHealth, closePostgresPool } = require('./config/postgres');
 
@@ -104,6 +105,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/mailbox', mailboxRoutes);
+app.use('/api/postgres', postgresRoutes);
 
 // Serve uploaded static files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

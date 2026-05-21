@@ -62,7 +62,7 @@ Manual assignment handling is slow, difficult to track, and hard to scale across
 |---|---|
 | Frontend | React, Vite, React Router |
 | Backend | Node.js, Express |
-| Database | MongoDB, Mongoose |
+| Database | MongoDB (primary), PostgreSQL (evaluation logs) |
 | Auth | JWT, bcryptjs |
 | Security | Helmet, rate limiter, sanitizers |
 | Realtime | Socket.IO |
@@ -74,11 +74,12 @@ Manual assignment handling is slow, difficult to track, and hard to scale across
 graph TD
   U[User Browser] --> V[Vercel Frontend]
   V -->|REST API| R[Render Backend]
-  R --> C[Express Routes]
-  C --> M[Controllers]
-  M --> D[MongoDB]
-  M --> F[File Uploads]
-  R --> S[Socket.IO]
+   R --> E[Express Routes]
+   E --> C[Controllers]
+   C --> M[(MongoDB)]
+   C --> P[(PostgreSQL: evaluation_logs)]
+   C --> F[File Uploads]
+   R --> S[Socket.IO]
 ```
 
 ## Project Structure
@@ -148,6 +149,26 @@ Gradion/
 - submissions
 - profile
 - mailbox
+- postgres (`/api/postgres`)
+
+### PostgreSQL Demo Endpoints
+
+- `GET /api/postgres/health`
+- `POST /api/postgres/evaluation-logs` (auth required)
+- `GET /api/postgres/evaluation-logs?limit=20` (auth required)
+
+Sample payload for `POST /api/postgres/evaluation-logs`:
+
+```json
+{
+   "feature": "postgres-evaluation",
+   "status": "working",
+   "notes": "Stored from Render demo",
+   "metadata": {
+      "source": "teacher-viva"
+   }
+}
+```
 
 ## Environment Variables
 
@@ -259,11 +280,6 @@ npm run build
 - file storage with Cloudinary or S3
 - plagiarism detection
 - live notifications using Socket.IO rooms
-
-## Team
-
-- Rishabh — backend, auth, deployment
-- other contributors — frontend and academic workflow modules
 
 ## License
 
