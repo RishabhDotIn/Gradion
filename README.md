@@ -163,6 +163,7 @@ GEMINI_API_KEY=your_gemini_api_key
 GEMINI_MODEL=gemini-2.5-flash
 ALLOWED_ORIGINS=https://your-frontend.vercel.app
 TRUST_PROXY=true
+DATABASE_URL=postgresql://user:password@host:5432/dbname
 ```
 
 ### Frontend (`frontend/.env`)
@@ -200,6 +201,7 @@ npm run dev
 4. Start command: `npm start`
 5. Add environment variables:
    - `MONGODB_URI`
+   - `DATABASE_URL` (optional, for PostgreSQL on Render)
    - `JWT_SECRET`
    - `GEMINI_API_KEY`
    - `GEMINI_MODEL`
@@ -224,6 +226,8 @@ npm run dev
 ```bash
 curl https://your-backend.onrender.com/api/health
 ```
+
+If `DATABASE_URL` is configured, the health response includes PostgreSQL status in `postgres`.
 
 ### Login Test
 

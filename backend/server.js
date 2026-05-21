@@ -21,6 +21,7 @@ const dashboardRoutes = require('./routes/dashboardRoutes');
 const submissionRoutes = require('./routes/submissionRoutes');
 const mailboxRoutes = require('./routes/mailboxRoutes');
 const { performance, dashboardStats } = require('./controllers/authController');
+const { checkPostgresHealth, closePostgresPool } = require('./config/postgres');
 
 // Load environment variables from backend/.env or repo-root .env
 const envCandidates = [
@@ -131,12 +132,14 @@ app.get('/api', (req, res) => {
   });
 });
 
-app.get('/api/health', (req, res) => {
+app.get('/api/health', async (req, res) => {
+  const postgres = await checkPostgresHealth();
   res.json({
     success: true,
     message: 'Gradion Backend API is running',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    postgres,
   });
 });
 
@@ -191,6 +194,7 @@ process.on('SIGINT', async () => {
   console.log('\n🛑 Shutting down server...');
   const mongoose = require('mongoose');
   try { await mongoose.connection.close(); } catch (e) {}
+  try { await closePostgresPool(); } catch (e) {}
   try { server.close(); } catch (e) {}
   process.exit(0);
 });
@@ -199,6 +203,7 @@ process.on('SIGTERM', async () => {
   console.log('\n🛑 Shutting down server...');
   const mongoose = require('mongoose');
   try { await mongoose.connection.close(); } catch (e) {}
+  try { await closePostgresPool(); } catch (e) {}
   try { server.close(); } catch (e) {}
   process.exit(0);
 });
